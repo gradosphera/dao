@@ -1,0 +1,14 @@
+const int error::unauthorized_address = 666;
+const int error::transaction_not_found = 667;
+const int error::unsufficent_balance_to_put_up_blago_for_sale = 668;
+const int error::double_approval_attempt = 669;
+const int error::pending_transaction_removal_fail = 670;
+const int error::wrong_profitable_address_passcode = 671;
+const int error::transaction_not_found = 667;
+const int error::unsufficent_balance_for_arbitrary_transaction = 668;
+const int error::unsufficent_approval_blago = 669;
+const int error::unsufficent_profit_blago = 670;
+const int error::failed_authorized_address_removal = 671;
+const int error::sender_not_deployer = 672;
+const int error::sender_not_dao_master = 673;
+const int error::status_not_initiated = 674;
