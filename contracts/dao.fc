@@ -1,0 +1,1333 @@
+;; Imports
+
+#include "stdlib.fc";
+#include "errors.fc";
+
+;; Operation Codes
+
+const int op::process_deploy_message = 0;
+const int op::master_log = 1;
+const int op::activate_dao = 2;
+const int op::propose_transaction = 3;
+const int op::approve_transaction = 4;
+const int op::accept_invitation_to_dao = 6;
+const int op::buy_blago = 7;
+const int op::invite_to_dao = 8;
+const int op::revoke_approval = 9;
+const int op::change_my_address = 10;
+const int op::quit_dao = 11;
+const int op::top_up_balance = 12;
+
+;; Internal Operations
+
+const int op::collect_funds = 81;
+const int op::start_blago_sale = 82;
+const int op::transfer_bought_blago = 84;
+
+;; Transaction Types
+
+const int tt::transaction_without_type = 0;
+const int tt::invite_address = 1;
+const int tt::delete_address = 2;
+const int tt::send_collect_funds = 81;
+const int tt::distribute_ton = 4;
+const int tt::arbitrary_transaction = 5;
+const int tt::update_agreement_percent = 6;
+const int tt::transfer_blago = 7;
+const int tt::put_up_blago_for_sale = 8;
+const int tt::delete_pending_invitations = 9;
+const int tt::delete_pending_transactions = 10;
+
+;; Storage globals
+
+;; Initial
+
+global int status; ;; uint1
+global slice dao_master; ;; slice 257bits
+global slice deployer_address; ;; slice 257bits
+global int transaction_fee; ;; uint32
+global int blago_seller_creation_fee;
+
+;; Active
+
+global int agreement_percent_numerator; ;; int32
+global int agreement_percent_denominator; ;; int32
+global int profit_reserve_percent_numerator; ;; int32
+global int profit_reserve_percent_denominator; ;; int32
+;; udict profitable_addresses
+;; Key: uint32
+;; value (cell)
+;; slice profitable_address
+global cell profitable_addresses; ;; 1 ref
+;; udict pending_invitations
+;; Key: uint32
+;; value (cell)
+;; slice address
+;; int32 approval_blago
+;; int32 profit_blago
+global cell pending_invitations; ;; 1 ref
+;; udict pending_transactions
+;; Key: uint32 (or sha256 address hash?)
+;; value (cell)
+;; int4 transaction_type
+;; int32 deadline
+;; cell transaction_info
+;; dict approvals
+;; int32 approval_blago_recieved
+global int next_transaction_index; ;; int64
+global cell pending_transactions; ;; 1 ref
+;; udict authorized_addresses
+;; Key: uint256 
+;; value (slice)
+;; slice authorized_address
+;; int32 approval_blago
+;; int32 profit_blago
+;; dict approved_transactions
+global cell authorized_addresses; ;; 1 ref
+global int total_approval_blago; ;; uint32
+global int total_profit_blago; ;; uint32
+global int total_profit_reserved; ;; uint32
+
+;; Storage functions
+
+() save_data() impure inline {
+    ~strdump("Start save_data()");
+    set_data(
+        begin_cell()
+            .store_int(status, 2)
+            .store_slice(dao_master)
+            .store_slice(deployer_address)
+            .store_coins(transaction_fee)
+            .store_coins(blago_seller_creation_fee)
+            .store_uint(agreement_percent_numerator, 32)
+            .store_uint(agreement_percent_denominator, 32)
+            .store_uint(profit_reserve_percent_numerator, 32)
+            .store_uint(profit_reserve_percent_denominator, 32)
+            .store_dict(profitable_addresses)
+            .store_dict(pending_invitations)
+            .store_uint(next_transaction_index, 32)
+            .store_dict(pending_transactions)
+            .store_dict(authorized_addresses)
+            .store_uint(total_approval_blago, 32)
+            .store_uint(total_profit_blago, 32)
+            .store_coins(total_profit_reserved)
+        .end_cell()
+    );
+    ~strdump("End save_data()");
+}
+
+() load_data() impure inline { 
+    ~strdump("Start load_data()");
+    slice ds = get_data().begin_parse();
+    status = ds~load_int(2);
+    status~dump();
+    dao_master = ds~load_msg_addr();
+    dao_master~dump();
+    deployer_address = ds~load_msg_addr();
+    deployer_address~dump();
+    if (status == -1) { ;; inactive
+        ~strdump("status == -1");
+        transaction_fee = 0;
+        blago_seller_creation_fee = 0;
+        agreement_percent_numerator = 0;
+        agreement_percent_denominator = 0;
+        profit_reserve_percent_numerator = 0; 
+        profit_reserve_percent_denominator = 0;
+        profitable_addresses = new_dict();
+        pending_invitations = new_dict();
+        next_transaction_index = 0;
+        pending_transactions = new_dict();
+        authorized_addresses = new_dict();
+        total_approval_blago = 0;
+        total_profit_blago = 0; 
+        total_profit_reserved = 0;
+    }
+    if (status == 0) { ;; initialized
+        ~strdump("status == 0");
+        transaction_fee = ds~load_coins();
+        blago_seller_creation_fee = ds~load_coins();
+        agreement_percent_numerator = 0;
+        agreement_percent_denominator = 0;
+        profit_reserve_percent_numerator = 0; 
+        profit_reserve_percent_denominator = 0;
+        profitable_addresses = new_dict();
+        pending_invitations = new_dict();
+        next_transaction_index = 0;
+        pending_transactions = new_dict();
+        authorized_addresses = new_dict();
+        total_approval_blago = 0;
+        total_profit_blago = 0; 
+        total_profit_reserved = 0;
+    }
+    if (status == 1) { ;; active
+        ~strdump("status == 1");
+        transaction_fee = ds~load_coins();
+        ~strdump("transaction_fee");
+        transaction_fee~dump();
+        blago_seller_creation_fee = ds~load_coins();
+        ~strdump("blago_seller_creation_fee");
+        blago_seller_creation_fee~dump();
+        agreement_percent_numerator = ds~load_uint(32);
+        ~strdump("agreement_percent_numerator");
+        agreement_percent_numerator~dump();
+        agreement_percent_denominator = ds~load_uint(32);
+        ~strdump("agreement_percent_denominator");
+        agreement_percent_denominator~dump();
+        profit_reserve_percent_numerator = ds~load_uint(32);
+        ~strdump("profit_reserve_percent_numerator");
+        profit_reserve_percent_numerator~dump();
+        profit_reserve_percent_denominator = ds~load_uint(32);
+        ~strdump("profit_reserve_percent_denominator");
+        profit_reserve_percent_denominator~dump();
+        profitable_addresses = ds~load_dict();
+        ~strdump("profitable_addresses");
+        profitable_addresses~dump();
+        pending_invitations = ds~load_dict();
+        ~strdump("pending_invitations");
+        pending_invitations~dump();
+        next_transaction_index = ds~load_uint(32);
+        ~strdump("next_transaction_index");
+        next_transaction_index~dump();
+        pending_transactions = ds~load_dict();
+        ~strdump("pending_transactions");
+        pending_transactions~dump();
+        authorized_addresses = ds~load_dict();
+        ~strdump("authorized_addresses");
+        authorized_addresses~dump();
+        total_approval_blago = ds~load_uint(32);
+        ~strdump("total_approval_blago");
+        total_approval_blago~dump();
+        total_profit_blago = ds~load_uint(32);
+        ~strdump("total_profit_blago");
+        total_profit_blago~dump();
+        total_profit_reserved = ds~load_coins();
+        ~strdump("total_profit_reserved");
+        total_profit_reserved~dump();
+        ds.end_parse();
+    }
+    ~strdump("End load_data()");
+}
+
+;; Custom functions
+
+() just_notify_master(int op, int transaction_type) impure inline {
+    cell msg = begin_cell()
+        .store_uint(0x10, 6)
+        .store_slice(dao_master)
+        .store_coins(transaction_fee)
+        .store_uint(1, 107)
+        .store_ref(
+        begin_cell()
+                .store_uint(op, 32)
+                .store_uint(transaction_type, 32)
+            .end_cell()
+    )
+    .end_cell();
+    send_raw_message(msg, 1);
+}
+
+() send_invites_to_dao(cell pending_invitations) impure inline {
+    ~strdump("Start sending invites to DAO");
+    (int passcode, cell authorized_address_info, int success?) = pending_invitations.udict_get_min_ref?(32);
+    while (success?) {
+        ~strdump("Start sending invitation");
+        slice authorized_address_info_cs = authorized_address_info.begin_parse();
+        slice authorized_address = authorized_address_info_cs~load_msg_addr();
+        int approval_blago = authorized_address_info_cs~load_uint(32);
+        approval_blago~dump();
+        int profit_blago = authorized_address_info_cs~load_uint(32);
+        profit_blago~dump();
+        cell msg = 
+            begin_cell()
+                .store_uint(0x18, 6)
+                .store_slice(authorized_address)
+                .store_coins(30000000) ;; check on tests
+                .store_uint(1, 107)
+                .store_ref(
+            begin_cell()
+                        .store_uint(op::invite_to_dao, 32)
+                        .store_uint(passcode, 32)
+                        .store_uint(approval_blago, 32)
+                        .store_uint(profit_blago, 32)
+                    .end_cell()
+        )
+            .end_cell();
+        send_raw_message(msg, 0);
+        passcode += 1;
+        (authorized_address_info, success?) = pending_invitations.udict_get_ref?(32, passcode);
+        ~strdump("End sending invitation");
+    }
+    ~strdump("Terminate sending invites to DAO");
+}
+
+() clear_pending_transactions_queue(cell pending_transactions) inline {
+    (int key, slice transaction_info, int success?) = pending_transactions.udict_get_min?(256);
+    while (success?) {
+        (key, transaction_info, success?) = pending_transactions.udict_get_next?(256, key);
+        transaction_info~skip_bits(8); ;; skip transaction_type
+        transaction_info~load_uint(32); ;; deadline
+    }
+}
+
+() main(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { return (); }
+    slice cs = in_msg_full.begin_parse();
+    int success? = cs~load_uint(4);
+    slice sender_address = cs~load_msg_addr();
+    int op = in_msg_body~load_uint(32);
+    load_data();
+    if (op == op::approve_transaction) {
+        ~strdump("Start transaction approval");
+        next_transaction_index~dump();
+        int transaction_index = in_msg_body~load_uint(32);
+        ~strdump("Start sender authorization");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
+        throw_unless(error::unauthorized_address, success?);
+        ~strdump("Start blago parsing");
+        slice authorized_address = authorized_address_info_cs~load_msg_addr();
+        int approval_blago = authorized_address_info_cs~load_uint(32);
+        ~strdump("approval_blago");
+        int profit_blago = authorized_address_info_cs~load_uint(32);
+        cell approved_transactions = authorized_address_info_cs~load_dict();
+        ~strdump("Get transaction by transaction_index");
+        transaction_index~dump();
+        (cell transaction, int success?) = pending_transactions.udict_get_ref?(32, transaction_index);
+        success?~dump();
+        throw_unless(error::transaction_not_found, success?);
+        ~strdump("Parse transaction");
+        slice transaction_cs = transaction.begin_parse();
+        int transaction_type = transaction_cs~load_uint(32); ;; transaction_type
+        transaction_type~dump();
+        if (transaction_type == tt::put_up_blago_for_sale) {
+            ~strdump("Check funds suffiency for put_up_blago_for_sale");
+            my_balance~dump();
+            total_profit_reserved~dump();
+            blago_seller_creation_fee~dump();
+            throw_unless(error::unsufficent_balance_to_put_up_blago_for_sale, (my_balance - total_profit_reserved) > blago_seller_creation_fee);
+        }
+        int deadline = transaction_cs~load_uint(32); ;; deadline
+        cell transaction_info = transaction_cs~load_ref(); ;; transaction_info
+        cell approvals = transaction_cs~load_dict(); ;; approvals
+        int approval_blago_recieved = transaction_cs~load_uint(32); ;; approval_blago_recieved
+        ~strdump("Add approve to approvals dictionary");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (approvals, int success?) = approvals.udict_add?(256, sender_address_sha256, begin_cell().end_cell().begin_parse());
+        throw_unless(error::double_approval_attempt, success?);
+        ~strdump("Count approvals");
+        int approvals_for_approval = total_approval_blago * agreement_percent_numerator / agreement_percent_denominator;
+        approval_blago_recieved = approval_blago_recieved + approval_blago;
+        ~strdump("Delete old transaction state from pending_transactions");
+        (pending_transactions, int success?) = pending_transactions.udict_delete?(32, transaction_index);
+        throw_unless(error::pending_transaction_removal_fail, success?);
+        ~strdump("Start check if sufficient approvals to start actions");
+        if (approval_blago_recieved > approvals_for_approval) {
+            slice transaction_info_cs = transaction_info.begin_parse();
+            if (transaction_type == tt::invite_address) {
+                ~strdump("Start Transaction Approval: Invite Address");
+                (int last_passcode, _, _) = pending_invitations.udict_get_max_ref?(32);
+                int passcode = last_passcode + 1;
+                slice authorized_address = transaction_info_cs~load_msg_addr(); ;; slice address_to_add_addr
+                int approval_blago = transaction_info_cs~load_uint(32);
+                int profit_blago = transaction_info_cs~load_uint(32); ;; int profit_blago
+                ~strdump("Add address to pending invitations");
+                pending_invitations~udict_set_ref(32, passcode, transaction_info);
+                ~strdump("Send invitation to authorized_address");
+                cell msg = 
+                    begin_cell()
+                        .store_uint(0x18, 6)
+                        .store_slice(authorized_address)
+                        .store_coins(30000000) ;; check on tests
+                        .store_uint(1, 107)
+                        .store_ref(
+                    begin_cell()
+                                .store_uint(op::invite_to_dao, 32)
+                                .store_uint(passcode, 32)
+                                .store_uint(approval_blago, 32)
+                                .store_uint(profit_blago, 32)
+                            .end_cell()
+                )
+                    .end_cell();
+                ~strdump("Update individual transactions approvals");
+                approved_transactions~udict_set(32, transaction_index, begin_cell().end_cell().begin_parse());
+                ~strdump("New cell");
+                slice blago_recipient_info_cs = 
+                    begin_cell()
+                        .store_slice(authorized_address)
+                        .store_uint(approval_blago, 32)
+                        .store_uint(profit_blago, 32)
+                        .store_dict(approved_transactions)
+                    .end_cell().begin_parse();
+                ~strdump("Create new state of sender in authorized_addresses");
+                int blago_sender_sha256 = slice_hash(sender_address);
+                authorized_addresses~udict_set(256, blago_sender_sha256, blago_recipient_info_cs);
+                send_raw_message(msg, 0);
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::delete_address) {
+                ~strdump("Start Transaction Approval: Delete Address");
+                slice address_to_delete = transaction_info_cs~load_msg_addr();
+                ~strdump("Decrease total blago");
+                int address_to_delete_sha256 = slice_hash(address_to_delete);
+                (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, address_to_delete_sha256);
+                authorized_address_info_cs~load_msg_addr(); ;; slice authorized_address
+                int approval_blago = authorized_address_info_cs~load_uint(32);
+                int profit_blago = authorized_address_info_cs~load_uint(32);
+                total_approval_blago = total_approval_blago - approval_blago;
+                total_profit_blago = total_profit_blago - profit_blago;
+                ~strdump("Delete address from dict");
+                (authorized_addresses, int success?) = authorized_addresses.udict_delete?(256, address_to_delete_sha256);
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::send_collect_funds) {
+                ~strdump("Start Transaction Approval: Send Withdraw Funds");
+                int profitable_address_passcode = transaction_info_cs~load_uint(32);
+                (cell profitable_address_info, int success?) = profitable_addresses.udict_get_ref?(32, profitable_address_passcode);
+                throw_unless(error::wrong_profitable_address_passcode, success?);
+                slice profitable_address_info_cs = profitable_address_info.begin_parse();
+                slice profitable_address = profitable_address_info_cs~load_msg_addr();
+                var msg = begin_cell()
+                    .store_uint(0x18, 6)
+                    .store_slice(profitable_address)
+                    .store_coins(330000000)
+                    .store_uint(1, 107)
+                    .store_ref(
+                    begin_cell()
+                            .store_uint(op::collect_funds, 32)
+                        .end_cell()
+                )
+                .end_cell();
+                send_raw_message(msg, 0);
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::distribute_ton) {
+                ~strdump("Start Transaction Approval: Distribute Ton");
+                int ton_to_distribute = transaction_info_cs~load_coins(); ;; int amount
+                ~strdump("Start sending TON to authorized addresses");
+                (int key, slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get_min?(256);
+                ~strdump("Start sending TON to authorized addresses");
+                while (success?) {
+                    ~strdump("In while cycle");
+                    slice address = authorized_address_info_cs~load_msg_addr();
+                    int approval_blago = authorized_address_info_cs~load_uint(32);
+                    int profit_blago = authorized_address_info_cs~load_uint(32);
+                    int ton_amount_to_address = ton_to_distribute / total_profit_blago * profit_blago;
+                    var msg = begin_cell()
+                        .store_uint(0x10, 6)
+                        .store_slice(address)
+                        .store_coins(ton_amount_to_address)
+                        .store_uint(0, 107)
+                        .end_cell();
+                    send_raw_message(msg, 0);
+                    (key, authorized_address_info_cs, success?) = authorized_addresses.udict_get_next?(256, key);
+                }
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::arbitrary_transaction) {
+                ~strdump("Start Transaction Approval: Arbitrary Transaction");
+                slice recipient = transaction_info_cs~load_msg_addr(); ;; recipient
+                int amount = transaction_info_cs~load_uint(32); ;; amount
+                cell msg_body = transaction_info_cs~load_ref(); ;; msg_body
+                throw_unless(error::unsufficent_balance_for_arbitrary_transaction, amount < my_balance - total_profit_reserved);
+                var msg = 
+                    begin_cell()
+                        .store_uint(0x18, 6)
+                        .store_slice(recipient)
+                        .store_coins(amount)
+                        .store_uint(1, 107)
+                        .store_ref(msg_body)
+                    .end_cell();
+                send_raw_message(msg, 0);
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::update_agreement_percent) {
+                ~strdump("Start Transaction Approval: Update Agreement Percent");
+                agreement_percent_numerator = transaction_info_cs~load_uint(32); ;; parse and save new settings
+                agreement_percent_denominator = transaction_info_cs~load_uint(32);
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::transfer_blago) {
+                ~strdump("Start Transaction Approval: Transfer blago");
+                ~strdump("Get transaction_info_cs");
+                slice blago_sender = transaction_info_cs~load_msg_addr();
+                blago_sender~dump();
+                slice blago_recipient = transaction_info_cs~load_msg_addr();
+                blago_recipient~dump();
+                int approval_blago_in_transfer = transaction_info_cs~load_uint(32);
+                approval_blago_in_transfer~dump();
+                int profit_blago_in_transfer = transaction_info_cs~load_uint(32);
+                profit_blago_in_transfer~dump();
+                ~strdump("Step 0. Update blago sender");
+                ~strdump("Get blago sender info");
+                int blago_sender_sha256 = slice_hash(blago_sender);
+                (slice blago_sender_info_cs, int success?) = authorized_addresses.udict_get?(256, blago_sender_sha256);
+                throw_unless(error::unauthorized_address, success?);
+                slice blago_sender_address = blago_sender_info_cs~load_msg_addr();
+                int sender_approval_blago = blago_sender_info_cs~load_uint(32);
+                int sender_profit_blago = blago_sender_info_cs~load_uint(32);
+                cell sender_approved_transactions = blago_sender_info_cs~load_dict();
+                ~strdump("Update blago_sender_info_cs");
+                sender_approval_blago = sender_approval_blago - approval_blago_in_transfer;
+                sender_profit_blago = sender_profit_blago - profit_blago_in_transfer;
+                (int transaction_index, slice sender_approved_transaction, int flag) = sender_approved_transactions.udict_get_min?(32);
+                while (flag) {
+                    ~strdump("Update pending transactions");
+                    (cell transaction, int success?) = pending_transactions.udict_get_ref?(32, transaction_index);
+                    slice transaction_cs = transaction.begin_parse();
+                    int transaction_type = transaction_cs~load_uint(32); ;; transaction_type
+                    int deadline = transaction_cs~load_uint(32); ;; deadline
+                    cell transaction_info = transaction_cs~load_ref(); ;; transaction_info
+                    cell approvals = transaction_cs~load_dict(); ;; approvals
+                    int approval_blago_recieved = transaction_cs~load_uint(32); ;; approval_blago_recieved
+                    ~strdump("Update approvals in pending transactions");
+                    (approvals, success?) = approvals.udict_delete?(256, blago_sender_sha256);
+                    approval_blago_recieved = approval_blago_recieved - approval_blago_in_transfer;
+                    ~strdump("Pack new transaction cell");
+                    cell new_transaction = 
+                        begin_cell()
+                            .store_uint(transaction_type, 32)
+                            .store_uint(deadline, 32)
+                            .store_ref(transaction_info)
+                            .store_ref(approvals)
+                            .store_uint(approval_blago_recieved, 32)
+                        .end_cell();
+                    pending_transactions~udict_set_ref(32, transaction_index, new_transaction);
+                    ~strdump("Sender approved transactions");
+                    (transaction_index, sender_approved_transaction, flag) = sender_approved_transactions.udict_get_next?(32, transaction_index);
+                }
+                ~strdump("Step 1: New State Of Sender in authorized_addresses");
+                int approval_blago_delta = sender_approval_blago - approval_blago_in_transfer;
+                int profit_blago_delta = sender_profit_blago - profit_blago_in_transfer;
+                if ((approval_blago_delta == 0) & (profit_blago_delta == 0)) {
+                    ~strdump("Delete sender from authorized_addresses if all blago transfered");
+                    int sender_address_sha256 = slice_hash(sender_address);
+                    (authorized_addresses, int success?) = authorized_addresses.udict_delete?(256, sender_address_sha256);
+                    throw_unless(error::unauthorized_address, success?);
+                } else {
+                    ~strdump("err");
+                    slice blago_sender_info_cs = 
+                        begin_cell()
+                            .store_slice(blago_sender_address)
+                            .store_uint(sender_approval_blago, 32)
+                            .store_uint(sender_profit_blago, 32)
+                            .store_dict(new_dict())
+                        .end_cell().begin_parse();
+                    ~strdump("err");
+                    authorized_addresses~udict_set(256, blago_sender_sha256, blago_sender_info_cs);
+                    ~strdump("err");
+                }
+                ~strdump("Step 2: Update blago recipient");
+                int recipient_approval_blago = approval_blago_in_transfer;
+                int recipient_profit_blago = profit_blago_in_transfer;
+                cell recipient_approved_transactions = new_dict();
+                int blago_recipient_sha256 = slice_hash(blago_recipient);
+                (slice blago_recipient_info_cs, int success?) = authorized_addresses.udict_get?(256, blago_recipient_sha256);
+                if (success?) { ;; sender is authorized addresses
+                    ~strdump("Get recipient info");
+                    slice blago_recipient_address = blago_recipient_info_cs~load_msg_addr();
+                    blago_recipient_address~dump();
+                    recipient_approval_blago = blago_recipient_info_cs~load_uint(32);
+                    recipient_approval_blago~dump();
+                    recipient_profit_blago = blago_recipient_info_cs~load_uint(32);
+                    recipient_profit_blago~dump();
+                    recipient_approved_transactions = blago_recipient_info_cs~load_dict();
+                    recipient_approved_transactions~dump();
+                    recipient_approval_blago = recipient_approval_blago + approval_blago_in_transfer;
+                    recipient_profit_blago = recipient_profit_blago + profit_blago_in_transfer;
+                    (int transaction_index, slice recipient_approved_transaction, int flag) = recipient_approved_transactions.udict_get_min?(32);
+                    while (flag) {
+                        ~strdump("Update pending transactions");
+                        (cell transaction, int success?) = pending_transactions.udict_get_ref?(32, transaction_index);
+                        slice transaction_cs = transaction.begin_parse();
+                        int transaction_type = transaction_cs~load_uint(32); ;; transaction_type
+                        int deadline = transaction_cs~load_uint(32); ;; deadline
+                        cell transaction_info = transaction_cs~load_ref(); ;; transaction_info
+                        cell approvals = transaction_cs~load_dict(); ;; approvals
+                        int approval_blago_recieved = transaction_cs~load_uint(32); ;; approval_blago_recieved
+                        approval_blago_recieved = approval_blago_recieved + approval_blago_in_transfer;
+                        ~strdump("Pack new transaction cell");
+                        cell new_transaction = 
+                            begin_cell()
+                                .store_uint(transaction_type, 32)
+                                .store_uint(deadline, 32)
+                                .store_ref(transaction_info)
+                                .store_ref(approvals)
+                                .store_uint(approval_blago_recieved, 32)
+                            .end_cell();
+                        pending_transactions~udict_set_ref(32, transaction_index, new_transaction);
+                        (transaction_index, recipient_approved_transaction, flag) = recipient_approved_transactions.udict_get_next?(32, transaction_index);
+                    }
+                }
+                slice blago_recipient_info_cs = 
+                    begin_cell()
+                        .store_slice(blago_recipient)
+                        .store_uint(recipient_approval_blago, 32)
+                        .store_uint(recipient_profit_blago, 32)
+                        .store_dict(recipient_approved_transactions)
+                    .end_cell().begin_parse();
+                authorized_addresses~udict_set(256, blago_recipient_sha256, blago_recipient_info_cs);
+                ~strdump("Step 0: Update recipient");
+                int blago_recipient_sha256 = slice_hash(blago_recipient);
+                (slice blago_recipient_info_cs, int success?) = authorized_addresses.udict_get?(256, blago_recipient_sha256);
+                if (success?) { ;; Recipient is authorized?
+                    ~strdump("Recipient is authorized");
+                    ~strdump("Parse recipient info");
+                    blago_recipient_info_cs~load_msg_addr();
+                    int recipient_approval_blago = blago_recipient_info_cs~load_uint(32);
+                    int recipient_profit_blago = blago_recipient_info_cs~load_uint(32);
+                    cell recipient_approved_transactions = blago_recipient_info_cs~load_dict();
+                    ~strdump("Update recipient total blago");
+                    recipient_approval_blago = recipient_approval_blago + approval_blago_in_transfer;
+                    recipient_profit_blago = recipient_profit_blago + profit_blago_in_transfer;
+                    ~strdump("Update recipient approvals");
+                    (int key, slice sender_approved_transaction, int flag) = sender_approved_transactions.udict_get_min?(32);
+                    while (flag) {
+                        recipient_approved_transactions~udict_add?(32, key, sender_approved_transaction);
+                        (key, sender_approved_transaction, flag) = sender_approved_transactions.udict_get_next?(32, key);
+                    }
+                } else {
+                    ~strdump("Reciepient add to authorized_address");
+                    ~strdump("Add recipient to authorized_addresses");
+                    blago_recipient_info_cs = 
+                        begin_cell()
+                            .store_slice(blago_recipient)
+                            .store_uint(approval_blago_in_transfer, 32)
+                            .store_uint(profit_blago_in_transfer, 32)
+                            .store_dict(new_dict())
+                        .end_cell().begin_parse();
+                    authorized_addresses~udict_set(256, blago_recipient_sha256, blago_recipient_info_cs);
+                }
+                save_data();
+                just_notify_master(op, transaction_type);
+                return ();
+            }
+            if (transaction_type == tt::put_up_blago_for_sale) {
+                ~strdump("Start Transaction Approval: Put Up blago For Sale");
+                slice seller_address = transaction_info_cs~load_msg_addr();
+                seller_address~dump();
+                slice buyer_address = transaction_info_cs~load_msg_addr();
+                buyer_address~dump();
+                int price = transaction_info_cs~load_coins();
+                price~dump();
+                int approval_blago_for_sale = transaction_info_cs~load_uint(32);
+                approval_blago_for_sale~dump();
+                int profit_blago_for_sale = transaction_info_cs~load_uint(32);
+                profit_blago_for_sale~dump();
+                ~strdump("Request master to initiate sale");
+                var msg = 
+                    begin_cell()
+                        .store_uint(0x18, 6)
+                        .store_slice(dao_master)
+                        .store_coins(blago_seller_creation_fee)
+                        .store_uint(1, 107)
+                        .store_ref(
+                    begin_cell()
+                                .store_uint(op::start_blago_sale, 32)
+                                .store_slice(my_address())
+                                .store_slice(seller_address)
+                                .store_slice(buyer_address)
+                                .store_coins(price)
+                                .store_uint(approval_blago_for_sale, 32)
+                                .store_uint(profit_blago_for_sale, 32)
+                            .end_cell()
+                )
+                    .end_cell();
+                send_raw_message(msg, 1);
+                save_data();
+                return();
+            }
+            if (transaction_type == tt::delete_pending_invitations) {
+                ~strdump("Start Transaction Approval: Delete Pending Invitations");
+                cell pending_invitations_for_removal = transaction_info_cs~load_dict();
+                ~strdump("Parse pending_invitations_for_removal dictionary");
+                (int key, slice pending_invitation_for_removal, int success?) = pending_invitations_for_removal.udict_get_min?(32);
+                while (success?) {
+                    ~strdump("Remove pending_invitation_for_removal");
+                    (pending_invitations, int flag) = pending_invitations.udict_delete?(32, key);
+                    (key, slice pending_invitation_for_removal, int success?) = pending_invitations_for_removal.udict_get_next?(32, key);
+                }
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+            if (transaction_type == tt::delete_pending_transactions) {
+                ~strdump("Start Transaction Approval: Delete Pending Transactions");
+                cell pending_transactions_for_removal = transaction_info_cs~load_dict();
+                ~strdump("Parse pending_transactions_for_removal dictionary");
+                (int key, slice pending_transaction_for_removal, int success?) = pending_transactions_for_removal.udict_get_min?(32);
+                while (success?) {
+                    ~strdump("Remove pending_transaction_for_removal");
+                    (pending_transactions, int flag) = pending_transactions.udict_delete?(32, key);
+                    (key, slice pending_transaction_for_removal, success?) = pending_transactions_for_removal.udict_get_next?(32, key);
+                }
+                save_data();
+                just_notify_master(op, transaction_type);
+                return();
+            }
+        } else {
+            ~strdump("Save new transaction state if not sufficient blago for actions");
+            cell new_transaction_state = begin_cell()
+                .store_uint(transaction_type, 32)
+                .store_uint(deadline, 32)
+                .store_ref(transaction_info)
+                .store_dict(approvals)
+                .store_uint(approval_blago_recieved, 32)
+            .end_cell();
+            pending_transactions~udict_set_ref(32, transaction_index, new_transaction_state);
+        }
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::propose_transaction) {
+        ~strdump("Start transaction proposal");
+        next_transaction_index~dump();
+        ~strdump("Start proposal initiator authorization");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
+        throw_unless(error::unauthorized_address, success?);
+        ~strdump("Start proposal parsing");
+        int transaction_type = in_msg_body.preload_uint(32);
+        transaction_type~dump();
+        int deadline = in_msg_body.preload_uint(32);
+        cell transaction_info = in_msg_body.preload_ref();
+        ~strdump("Convert transaction_info to slice");
+        slice transaction_info_cs = transaction_info.begin_parse();
+        ~strdump("Set zero approvals");
+        cell approvals = new_dict();
+        int approval_blago_recieved = 0;
+        if (transaction_type == tt::invite_address) {
+            ~strdump("Start Proposal: Invite Address");
+            slice address_to_invite = transaction_info_cs~load_msg_addr();
+            address_to_invite~dump();
+            int approval_blago = transaction_info_cs~load_uint(32);
+            approval_blago~dump();
+            int profit_blago = transaction_info_cs~load_uint(32);
+            profit_blago~dump();
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(
+                    begin_cell()
+                            .store_slice(address_to_invite)
+                            .store_uint(approval_blago, 32)
+                            .store_uint(profit_blago, 32)
+                            .store_dict(new_dict()) ;; dict approved_transactions
+                        .end_cell()
+                )
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::delete_address) {
+            ~strdump("Start Transaction Proposal: Delete Address");
+            transaction_info_cs~load_msg_addr(); ;; slice address_to_delete
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::send_collect_funds) {
+            ~strdump("Start Transaction Proposal: Send Withdraw Funds");
+            transaction_info_cs~load_uint(32); ;; int profitable_address_passcode
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::distribute_ton) {
+            ~strdump("Start Transaction Proposal: Distribute Ton");
+            transaction_info_cs~load_coins(); ;; int distribution_amount
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::arbitrary_transaction) {
+            ~strdump("Start Transaction Proposal: Arbitrary Transaction");
+            transaction_info_cs~load_msg_addr(); ;; recipient
+            int amount = transaction_info_cs~load_coins(); ;; amount
+            transaction_info_cs~load_ref(); ;; msg_body
+            ~strdump("Check the integrity of reserves");
+            throw_unless(error::unsufficent_balance_for_arbitrary_transaction, amount <= my_balance - total_profit_reserved);
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return(); 
+        }
+        if (transaction_type == tt::update_agreement_percent) {
+            ~strdump("Start Transaction Proposal: Update Agreement Percent");
+            transaction_info_cs~load_uint(32); ;; int agreement_percent_numerator
+            transaction_info_cs~load_uint(32); ;; int agreement_percent_denominator
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::transfer_blago) {
+            ~strdump("Start Transaction Proposal: Transfer blago");
+            slice recipient = transaction_info_cs~load_msg_addr();
+            int approval_blago_in_transfer = transaction_info_cs~load_uint(32);
+            int profit_blago_in_transfer = transaction_info_cs~load_uint(32);
+            ~strdump("Check blago availability");
+            int approval_blago = authorized_address_info_cs~load_uint(32);
+            int profit_blago = authorized_address_info_cs~load_uint(32);
+            throw_unless(error::unsufficent_approval_blago, approval_blago_in_transfer <= approval_blago);
+            throw_unless(error::unsufficent_profit_blago, profit_blago_in_transfer <= profit_blago);
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(
+                    begin_cell()
+                            .store_slice(sender_address)
+                            .store_slice(recipient)
+                            .store_uint(approval_blago_in_transfer, 32)
+                            .store_uint(profit_blago_in_transfer, 32)
+                        .end_cell()
+                )
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::put_up_blago_for_sale) {
+            ~strdump("Start Transaction Proposal: Put Up blago For Sale");
+            slice blago_buyer = transaction_info_cs~load_msg_addr();
+            int price = transaction_info_cs~load_coins();
+            int approval_blago_for_sale = transaction_info_cs~load_uint(32);
+            approval_blago_for_sale~dump();
+            int profit_blago_for_sale = transaction_info_cs~load_uint(32);
+            profit_blago_for_sale~dump();
+            ~strdump("Check blago availability");
+            int approval_blago = authorized_address_info_cs~load_uint(32);
+            int profit_blago = authorized_address_info_cs~load_uint(32);
+            throw_unless(error::unsufficent_approval_blago, approval_blago_for_sale <= approval_blago);
+            throw_unless(error::unsufficent_profit_blago, profit_blago_for_sale <= profit_blago);
+            ~strdump("Add transaction to pending_transactions");
+            next_transaction_index~dump();
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(
+                    begin_cell()
+                            .store_slice(sender_address)
+                            .store_slice(blago_buyer)
+                            .store_coins(price)
+                            .store_uint(approval_blago_for_sale, 32)
+                            .store_uint(profit_blago_for_sale, 32)
+                        .end_cell()
+                )
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::delete_pending_invitations) {
+            ~strdump("Start Transaction Proposal: Delete Pending Invitations");
+            transaction_info_cs~load_dict(); ;; dict pending_invitations_for_removal
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+        if (transaction_type == tt::delete_pending_transactions) {
+            ~strdump("Start Transaction Proposal: Delete Pending Transactions");
+            transaction_info_cs~load_dict(); ;; dict pending_transactions_for_removal
+            ~strdump("Add transaction to pending_transactions");
+            pending_transactions~udict_set_ref(
+                32, 
+                next_transaction_index, 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_dict(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell()
+            );
+            next_transaction_index = next_transaction_index + 1;
+            save_data();
+            just_notify_master(op, transaction_type);
+            return();
+        }
+    }
+    if (op == op::top_up_balance) {
+        ~strdump("Start toping up a dao balance");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
+        throw_unless(error::unauthorized_address, success?);
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::revoke_approval) {
+        ~strdump("Start approval revocation");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
+        throw_unless(error::unauthorized_address, success?);
+        ~strdump("Start blago parsing");
+        slice authorized_address = authorized_address_info_cs~load_msg_addr();
+        int approval_blago = authorized_address_info_cs~load_uint(32);
+        ~strdump("approval_blago");
+        approval_blago~dump();
+        int profit_blago = authorized_address_info_cs~load_uint(32);
+        cell approved_transactions = authorized_address_info_cs~load_dict();
+        ~strdump("profit_blago");
+        profit_blago~dump();
+        ~strdump("Delete from individual approvals dictionary");
+        ~strdump("Delete from approvals");
+    }
+    if (op == op::collect_funds) {
+        ~strdump("Start profit collecting");
+        total_profit_reserved = msg_value * profit_reserve_percent_numerator / profit_reserve_percent_denominator + total_profit_reserved;
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::change_my_address) {
+        ~strdump("Start changing my address");
+        slice new_authorized_address = in_msg_body~load_msg_addr();
+        ~strdump("Start udict_get?");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
+        if (success?) {
+            ~strdump("Sender authorized");
+            slice old_authorized_address = authorized_address_info_cs~load_msg_addr();
+            int approval_blago = authorized_address_info_cs~load_uint(32);
+            approval_blago~dump();
+            int profit_blago = authorized_address_info_cs~load_uint(32);
+            profit_blago~dump();
+            cell approved_transactions = authorized_address_info_cs~load_dict();
+            ~strdump("Start authorized_address update");
+            slice new_authorized_authorized_address_info = 
+                begin_cell()
+                    .store_slice(new_authorized_address)
+                    .store_uint(approval_blago, 32)
+                    .store_uint(profit_blago, 32)
+                    .store_dict(approved_transactions)
+                .end_cell().begin_parse();
+            authorized_addresses~udict_set(256, slice_hash(new_authorized_address), new_authorized_authorized_address_info);
+
+        }
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::quit_dao) {
+        ~strdump("Start quiting DAO");
+        int sender_address_sha256 = slice_hash(sender_address);
+        (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
+        ~strdump("End udict_get?");
+        slice authorized_address = authorized_address_info_cs~load_msg_addr();
+        if (success? & equal_slices(sender_address, authorized_address)) {
+            ~strdump("Sender authorized");
+            int approval_blago = authorized_address_info_cs~load_uint(32);
+            int profit_blago = authorized_address_info_cs~load_uint(32);
+            ~strdump("Start authorized_address removal");
+            int sender_address_sha256 = slice_hash(sender_address);
+            (authorized_addresses, int success?) = authorized_addresses.udict_delete?(256, sender_address_sha256);
+            throw_unless(error::failed_authorized_address_removal, success?);
+            ~strdump("Start blago update");
+            total_approval_blago -= approval_blago;
+            total_profit_blago -= profit_blago;
+        }
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::accept_invitation_to_dao) {
+        ~strdump("Start accepting invitation to DAO");
+        int passcode = in_msg_body~load_uint(32);
+        (cell pending_invitation_info, int success?) = pending_invitations.udict_get_ref?(32, passcode);
+        slice pending_invitation_info_cs = pending_invitation_info.begin_parse();
+        slice authorized_address = pending_invitation_info_cs~load_msg_addr();
+        if (success? & equal_slices(sender_address, authorized_address)) {
+            ~strdump("Sender authorized");
+            int approval_blago = pending_invitation_info_cs~load_uint(32);
+            approval_blago~dump();
+            int profit_blago = pending_invitation_info_cs~load_uint(32);
+            profit_blago~dump();
+            slice authorized_address_info_cs = 
+                begin_cell()
+                    .store_slice(authorized_address)
+                    .store_uint(approval_blago, 32)
+                    .store_uint(profit_blago, 32)
+                    .store_dict(new_dict())
+                .end_cell().begin_parse();
+            ~strdump("End authorized_address adding");
+            int sender_address_sha256 = slice_hash(sender_address);
+            authorized_addresses~udict_set(256, sender_address_sha256, authorized_address_info_cs);
+            ~strdump("Start blago update");
+            total_approval_blago += approval_blago;
+            total_profit_blago += profit_blago;
+        }
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::transfer_bought_blago) {
+        ~strdump("Start the Transfer Of Bought blago");
+        ~strdump("Parse transaction info");
+        slice blago_sender = in_msg_body~load_msg_addr();
+        blago_sender~dump();
+        slice blago_recipient = in_msg_body~load_msg_addr();
+        blago_recipient~dump();
+        int approval_blago_in_transfer = in_msg_body~load_uint(32);
+        approval_blago_in_transfer~dump();
+        int profit_blago_in_transfer = in_msg_body~load_uint(32);
+        profit_blago_in_transfer~dump();
+        ~strdump("Step 0. Update blago sender");
+        ~strdump("Get blago sender info");
+        int blago_sender_sha256 = slice_hash(blago_sender);
+        (slice blago_sender_info_cs, int success?) = authorized_addresses.udict_get?(256, blago_sender_sha256);
+        throw_unless(error::unauthorized_address, success?);
+        slice blago_sender_address = blago_sender_info_cs~load_msg_addr();
+        int sender_approval_blago = blago_sender_info_cs~load_uint(32);
+        int sender_profit_blago = blago_sender_info_cs~load_uint(32);
+        cell sender_approved_transactions = blago_sender_info_cs~load_dict();
+        ~strdump("Update blago_sender_info_cs");
+        sender_approval_blago = sender_approval_blago - approval_blago_in_transfer;
+        sender_profit_blago = sender_profit_blago - profit_blago_in_transfer;
+        (int transaction_index, slice sender_approved_transaction, int flag) = sender_approved_transactions.udict_get_min?(32);
+        while (flag) {
+            ~strdump("Update pending transactions");
+            (cell transaction, int success?) = pending_transactions.udict_get_ref?(32, transaction_index);
+            slice transaction_cs = transaction.begin_parse();
+            int transaction_type = transaction_cs~load_uint(32); ;; transaction_type
+            int deadline = transaction_cs~load_uint(32); ;; deadline
+            cell transaction_info = transaction_cs~load_ref(); ;; transaction_info
+            cell approvals = transaction_cs~load_dict(); ;; approvals
+            int approval_blago_recieved = transaction_cs~load_uint(32); ;; approval_blago_recieved
+            ~strdump("Update approvals in pending transactions");
+            (approvals, success?) = approvals.udict_delete?(256, blago_sender_sha256);
+            approval_blago_recieved = approval_blago_recieved - approval_blago_in_transfer;
+            ~strdump("Pack new transaction cell");
+            cell new_transaction = 
+                begin_cell()
+                    .store_uint(transaction_type, 32)
+                    .store_uint(deadline, 32)
+                    .store_ref(transaction_info)
+                    .store_ref(approvals)
+                    .store_uint(approval_blago_recieved, 32)
+                .end_cell();
+            pending_transactions~udict_set_ref(32, transaction_index, new_transaction);
+            ~strdump("Sender approved transactions");
+            (transaction_index, sender_approved_transaction, flag) = sender_approved_transactions.udict_get_next?(32, transaction_index);
+        }
+        ~strdump("Step 1: New State Of Sender in authorized_addresses");
+        int approval_blago_delta = sender_approval_blago - approval_blago_in_transfer;
+        int profit_blago_delta = sender_profit_blago - profit_blago_in_transfer;
+        if ((approval_blago_delta == 0) & (profit_blago_delta == 0)) {
+            ~strdump("Delete sender from authorized_addresses if all blago transfered");
+            int sender_address_sha256 = slice_hash(sender_address);
+            (authorized_addresses, int success?) = authorized_addresses.udict_delete?(256, sender_address_sha256);
+            throw_unless(error::unauthorized_address, success?);
+        } else {
+            ~strdump("err");
+            slice blago_sender_info_cs = 
+                begin_cell()
+                    .store_slice(blago_sender_address)
+                    .store_uint(sender_approval_blago, 32)
+                    .store_uint(sender_profit_blago, 32)
+                    .store_dict(new_dict())
+                .end_cell().begin_parse();
+            ~strdump("err");
+            authorized_addresses~udict_set(256, blago_sender_sha256, blago_sender_info_cs);
+            ~strdump("err");
+        }
+        ~strdump("Step 2: Update blago recipient");
+        int recipient_approval_blago = approval_blago_in_transfer;
+        int recipient_profit_blago = profit_blago_in_transfer;
+        cell recipient_approved_transactions = new_dict();
+        int blago_recipient_sha256 = slice_hash(blago_recipient);
+        (slice blago_recipient_info_cs, int success?) = authorized_addresses.udict_get?(256, blago_recipient_sha256);
+        if (success?) { ;; sender is authorized addresses
+            ~strdump("Get recipient info");
+            slice blago_recipient_address = blago_recipient_info_cs~load_msg_addr();
+            blago_recipient_address~dump();
+            recipient_approval_blago = blago_recipient_info_cs~load_uint(32);
+            recipient_approval_blago~dump();
+            recipient_profit_blago = blago_recipient_info_cs~load_uint(32);
+            recipient_profit_blago~dump();
+            recipient_approved_transactions = blago_recipient_info_cs~load_dict();
+            recipient_approved_transactions~dump();
+            recipient_approval_blago = recipient_approval_blago + approval_blago_in_transfer;
+            recipient_profit_blago = recipient_profit_blago + profit_blago_in_transfer;
+            (int transaction_index, slice recipient_approved_transaction, int flag) = recipient_approved_transactions.udict_get_min?(32);
+            while (flag) {
+                ~strdump("Update pending transactions");
+                (cell transaction, int success?) = pending_transactions.udict_get_ref?(32, transaction_index);
+                slice transaction_cs = transaction.begin_parse();
+                int transaction_type = transaction_cs~load_uint(32); ;; transaction_type
+                int deadline = transaction_cs~load_uint(32); ;; deadline
+                cell transaction_info = transaction_cs~load_ref(); ;; transaction_info
+                cell approvals = transaction_cs~load_dict(); ;; approvals
+                int approval_blago_recieved = transaction_cs~load_uint(32); ;; approval_blago_recieved
+                approval_blago_recieved = approval_blago_recieved + approval_blago_in_transfer;
+                ~strdump("Pack new transaction cell");
+                cell new_transaction = 
+                    begin_cell()
+                        .store_uint(transaction_type, 32)
+                        .store_uint(deadline, 32)
+                        .store_ref(transaction_info)
+                        .store_ref(approvals)
+                        .store_uint(approval_blago_recieved, 32)
+                    .end_cell();
+                pending_transactions~udict_set_ref(32, transaction_index, new_transaction);
+                (transaction_index, recipient_approved_transaction, flag) = recipient_approved_transactions.udict_get_next?(32, transaction_index);
+            }
+        }
+        slice blago_recipient_info_cs = 
+            begin_cell()
+                .store_slice(blago_recipient)
+                .store_uint(recipient_approval_blago, 32)
+                .store_uint(recipient_profit_blago, 32)
+                .store_dict(recipient_approved_transactions)
+            .end_cell().begin_parse();
+        authorized_addresses~udict_set(256, blago_recipient_sha256, blago_recipient_info_cs);
+        ~strdump("Step 0: Update recipient");
+        int blago_recipient_sha256 = slice_hash(blago_recipient);
+        (slice blago_recipient_info_cs, int success?) = authorized_addresses.udict_get?(256, blago_recipient_sha256);
+        if (success?) { ;; Recipient is authorized?
+            ~strdump("Recipient is authorized");
+            ~strdump("Parse recipient info");
+            blago_recipient_info_cs~load_msg_addr();
+            int recipient_approval_blago = blago_recipient_info_cs~load_uint(32);
+            int recipient_profit_blago = blago_recipient_info_cs~load_uint(32);
+            cell recipient_approved_transactions = blago_recipient_info_cs~load_dict();
+            ~strdump("Update recipient total blago");
+            recipient_approval_blago = recipient_approval_blago + approval_blago_in_transfer;
+            recipient_profit_blago = recipient_profit_blago + profit_blago_in_transfer;
+            ~strdump("Update recipient approvals");
+            (int key, slice sender_approved_transaction, int flag) = sender_approved_transactions.udict_get_min?(32);
+            while (flag) {
+                recipient_approved_transactions~udict_add?(32, key, sender_approved_transaction);
+                (key, sender_approved_transaction, flag) = sender_approved_transactions.udict_get_next?(32, key);
+            }
+        } else {
+            ~strdump("Reciepient add to authorized_address");
+            ~strdump("Add recipient to authorized_addresses");
+            blago_recipient_info_cs = 
+                begin_cell()
+                    .store_slice(blago_recipient)
+                    .store_uint(approval_blago_in_transfer, 32)
+                    .store_uint(profit_blago_in_transfer, 32)
+                    .store_dict(new_dict())
+                .end_cell().begin_parse();
+            authorized_addresses~udict_set(256, blago_recipient_sha256, blago_recipient_info_cs);
+        }
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return ();
+    }
+    if (op == op::activate_dao) {
+        ~strdump("Start DAO Activation");
+        throw_unless(error::sender_not_deployer, equal_slices(sender_address, deployer_address));
+        throw_unless(error::status_not_initiated, status == 0);
+        agreement_percent_numerator = in_msg_body~load_uint(32);
+        agreement_percent_denominator = in_msg_body~load_uint(32);
+        profit_reserve_percent_numerator = in_msg_body~load_uint(32);
+        profit_reserve_percent_denominator = in_msg_body~load_uint(32);
+        profitable_addresses = in_msg_body~load_dict();
+        pending_invitations = in_msg_body~load_dict();
+        send_invites_to_dao(pending_invitations);
+        status = 1;
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    if (op == op::process_deploy_message) {
+        ~strdump("Start deploy message processing");
+        throw_unless(error::sender_not_dao_master, equal_slices(sender_address, dao_master));
+        transaction_fee = in_msg_body~load_coins();
+        blago_seller_creation_fee~dump();
+        blago_seller_creation_fee = in_msg_body~load_coins();
+        blago_seller_creation_fee~dump();
+        agreement_percent_numerator = 0;
+        agreement_percent_denominator = 0;
+        if (slice_bits(in_msg_body) > 0) { ;; If config added with deploy message
+            agreement_percent_numerator = in_msg_body~load_uint(32);
+            agreement_percent_denominator = in_msg_body~load_uint(32);
+            pending_invitations = in_msg_body~load_dict();
+            send_invites_to_dao(pending_invitations);
+        }
+        pending_transactions = new_dict();
+        authorized_addresses = new_dict();
+        total_approval_blago = 0;
+        total_profit_blago = 0;
+        status = 0;
+        save_data();
+        just_notify_master(op, tt::transaction_without_type);
+        return();
+    }
+    throw(0xffff);
+}
+
+;; Custom get-methods
+
+(int, slice, slice, int, int, int, int, int, cell, cell, cell, cell, int, int, int) get_dao_data() method_id {
+    load_data();
+    return (
+        status, ;; int1
+        dao_master, ;; slice
+        deployer_address, ;; slice
+        transaction_fee, ;; uint32
+        agreement_percent_numerator, ;; uint32
+        agreement_percent_denominator, ;; uint32
+        profit_reserve_percent_numerator, ;; uint32
+        profit_reserve_percent_denominator, ;; uint32
+        profitable_addresses,
+        pending_invitations, ;; key: int address_sha256_hash // value (cell): slice address,  int approval_blago, int profit_blago
+        pending_transactions, ;; key: uint32 // value (cell): int transaction_type, int deadline, cell transaction_info, cell approvals, int approval_blago_recieved
+        authorized_addresses, ;; key: int address_sha256_hash // value (slice): slice authorized_address,  int approval_blago, int profit_blago, dict approved_transactions
+        total_approval_blago, ;; uint32
+        total_profit_blago, ;; uint32
+        total_profit_reserved ;; uint32
+    );
+}
+
+(slice, int, int, cell) get_authorized_address_data(cell authorized_address_cell) method_id {
+    load_data();
+    slice authorized_address_cell_cs = authorized_address_cell.begin_parse();
+    slice authorized_address = authorized_address_cell_cs~load_msg_addr();
+    int authorized_address_sha256 = slice_hash(authorized_address);
+    (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, authorized_address_sha256);
+    return (
+        authorized_address_info_cs~load_msg_addr(), ;; slice authorized_address
+        authorized_address_info_cs~load_uint(32), ;; int approval_blago
+        authorized_address_info_cs~load_uint(32), ;; int profit_blago
+        authorized_address_info_cs~load_dict() ;; cell approved_transactions
+    );
+}
+
+(slice, int, int) get_pending_invitation_data(int passcode) method_id {
+    load_data();
+    (cell authorized_address_info, int success?) = pending_invitations.udict_get_ref?(32, passcode);
+    slice authorized_address_info_cs = authorized_address_info.begin_parse();
+    return (
+        authorized_address_info_cs~load_msg_addr(), ;; slice authorized_address
+        authorized_address_info_cs~load_uint(32), ;; int approval_blago
+        authorized_address_info_cs~load_uint(32) ;; int profit_blago
+    );
+}
+
+(int, int, cell, cell, int) get_pending_transaction_data(int key) method_id {
+    load_data();
+    (cell pending_transaction_info, int success?) = pending_transactions.udict_get_ref?(32, key);
+    slice pending_transaction_info_cs = pending_transaction_info.begin_parse();
+    return (
+        pending_transaction_info_cs~load_uint(32), ;; int transaction_type
+        pending_transaction_info_cs~load_uint(32), ;; int deadline
+        pending_transaction_info_cs~load_ref(), ;; cell transaction_info
+        pending_transaction_info_cs~load_dict(), ;; dict approvals
+        pending_transaction_info_cs~load_uint(32) ;; int approval_blago_recieved
+    );
+}
