@@ -1,0 +1,174 @@
+;; Imports
+
+#include "stdlib.fc";
+
+;; Operation Codes
+
+const int op::buy = 0;
+const int op::withdraw_from_sale = 1;
+
+;; Internal Operations
+
+const int op::process_deploy_message = 82;
+const int op::transfer_bought_blago = 84;
+
+;; Storage globals
+
+;; Initial
+global int active?; ;; uint1
+global slice dao_master; ;; slice 257bits
+global int index; ;; uint32
+
+;; Active
+global slice dao;
+global slice seller_address;
+global slice buyer_address;
+global int price;
+global int approval_blago_for_sale;
+global int profit_blago_for_sale;
+
+;; Storage functions
+
+() save_data() impure inline {
+    ~strdump("Start save_data()");
+    set_data(
+        begin_cell()
+            .store_int(active?, 1)
+            .store_slice(dao_master) ;; slice 257bits
+            .store_uint(index, 32)
+            .store_slice(dao) ;; slice 257bits
+            .store_ref( ;; cell sale_info
+            begin_cell()
+                    .store_slice(seller_address)
+                    .store_slice(buyer_address)
+                    .store_coins(price)
+                    .store_uint(approval_blago_for_sale, 32)
+                    .store_uint(profit_blago_for_sale, 32)
+                .end_cell()
+        )
+        .end_cell());
+    ~strdump("End save_data()");
+}
+
+() load_data() impure inline {
+    ~strdump("Start load_data()");
+    slice ds = get_data().begin_parse();
+    ~strdump("1");
+    active? = ds~load_int(1);
+    ~strdump("2");
+    dao_master = ds~load_msg_addr();
+    ~strdump("3");
+    index = ds~load_uint(32);
+    ~strdump("4");
+    if (active?) {
+        ~strdump("active? == -1");
+        dao = ds~load_msg_addr(); 
+        ~strdump("1");
+        slice sale_info_cs = ds~load_ref().begin_parse();
+        ~strdump("2");
+        seller_address = sale_info_cs~load_msg_addr();
+        ~strdump("3");
+        buyer_address = sale_info_cs~load_msg_addr();
+        ~strdump("4");
+        price = sale_info_cs~load_coins();
+        ~strdump("5");
+        approval_blago_for_sale = sale_info_cs~load_uint(32);
+        ~strdump("6");
+        profit_blago_for_sale = sale_info_cs~load_uint(32);
+        ~strdump("7");
+    } else {
+        ~strdump("active? == 0");
+        dao = begin_cell().end_cell().begin_parse();
+        seller_address = begin_cell().end_cell().begin_parse();
+        buyer_address = begin_cell().end_cell().begin_parse();
+        price = 0;
+        approval_blago_for_sale = 0;
+        profit_blago_for_sale = 0;
+    }
+    ~strdump("End load_data()");
+}
+
+() just_notify_master(int op) impure inline {
+    cell msg = begin_cell()
+        .store_uint(0x10, 6)
+        .store_slice(dao_master)
+        .store_coins(0)
+        .store_uint(1, 107)
+        .store_ref(
+        begin_cell()
+                .store_uint(op, 32)
+            .end_cell()
+    )
+    .end_cell();
+    send_raw_message(msg, 1);
+}
+
+() main(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    slice cs = in_msg_full.begin_parse();
+    int flags = cs~load_uint(4);
+    slice sender_address = cs~load_msg_addr();
+    load_data();
+    if (in_msg_body.slice_empty?()) {
+        ~strdump("Start purchase");
+        active?~dump();
+        throw_unless(333, active? == -1);
+        ~strdump("1");
+        throw_unless(666, equal_slices(sender_address, buyer_address));
+        ~strdump("1");
+        throw_unless(777, msg_value >= price);
+        ~strdump("1");
+        seller_address~dump();
+        buyer_address~dump();
+        approval_blago_for_sale~dump();
+        profit_blago_for_sale~dump();
+        var msg = begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(dao)
+            .store_coins(0)
+            .store_uint(1, 107)
+            .store_ref(
+            begin_cell()
+                    .store_uint(op::transfer_bought_blago, 32)
+                    .store_slice(seller_address)
+                    .store_slice(buyer_address)
+                    .store_uint(approval_blago_for_sale, 32)
+                    .store_uint(profit_blago_for_sale, 32)
+                .end_cell()
+        )
+        .end_cell();
+        ~strdump("1");
+        send_raw_message(msg, 128 + 32);
+        ~strdump("1");
+        return ();
+    }
+    int op = in_msg_body~load_uint(32);
+    if (op == op::process_deploy_message) {
+        active?~dump();
+        ~strdump("Start deploy message processing");
+        throw_unless(666, equal_slices(sender_address, dao_master));
+        dao = in_msg_body~load_msg_addr();
+        seller_address = in_msg_body~load_msg_addr();
+        buyer_address = in_msg_body~load_msg_addr();
+        price = in_msg_body~load_coins();
+        approval_blago_for_sale = in_msg_body~load_uint(32);
+        approval_blago_for_sale~dump();
+        profit_blago_for_sale = in_msg_body~load_uint(32);
+        profit_blago_for_sale~dump();
+        active? = -1;
+        active?~dump();
+        save_data();
+        active?~dump();
+        just_notify_master(op);
+        return();
+    }
+}
+
+(slice, slice, int, int) get_sale_info() method_id {
+    load_data();
+    return (
+        seller_address, ;; slice seller_address
+        buyer_address, ;; slice buyer_address
+        approval_blago_for_sale, ;; int approval_blago_for_sale
+        profit_blago_for_sale ;; int profit_blago_for_sale
+    );
+}
