@@ -8,7 +8,7 @@ const int op::change_dao_master_owner = 2;
 
 ;; Internal operations
 
-const int op::start_points_sale = 82;
+const int op::start_blago_sale = 82;
 
 ;; Global variables
 
@@ -19,9 +19,9 @@ global int next_dao_transaction_fee; ;; uint32
 global int next_dao_creation_fee_discount;
 global int next_dao_transaction_fee_increase;
 global int max_dao_transaction_fee;
-global cell points_seller_code; ;; ref 2
-global int points_seller_next_index; ;; uint32
-global int points_seller_creation_fee; ;; uint32
+global cell blago_seller_code; ;; ref 2
+global int blago_seller_next_index; ;; uint32
+global int blago_seller_creation_fee; ;; uint32
 
 ;; Storage functions
 
@@ -42,12 +42,12 @@ global int points_seller_creation_fee; ;; uint32
     next_dao_transaction_fee_increase~dump();
     max_dao_transaction_fee = ds~load_coins();
     max_dao_transaction_fee~dump();
-    points_seller_code = ds~load_ref();
-    points_seller_code~dump();
-    points_seller_next_index = ds~load_uint(32);
-    points_seller_next_index~dump();
-    points_seller_creation_fee = ds~load_coins();
-    points_seller_creation_fee~dump();
+    blago_seller_code = ds~load_ref();
+    blago_seller_code~dump();
+    blago_seller_next_index = ds~load_uint(32);
+    blago_seller_next_index~dump();
+    blago_seller_creation_fee = ds~load_coins();
+    blago_seller_creation_fee~dump();
     ds.end_parse();
     ~strdump("End load_data()");
 }
@@ -63,15 +63,15 @@ global int points_seller_creation_fee; ;; uint32
             .store_coins(next_dao_creation_fee_discount)
             .store_coins(next_dao_transaction_fee_increase)
             .store_coins(max_dao_transaction_fee)
-            .store_ref(points_seller_code)
-            .store_uint(points_seller_next_index, 32)
-            .store_coins(points_seller_creation_fee)
+            .store_ref(blago_seller_code)
+            .store_uint(blago_seller_next_index, 32)
+            .store_coins(blago_seller_creation_fee)
         .end_cell()
     );
     ~strdump("End save_data()");
 }
 
-;; A DAO Deploy Functions
+;; DAO Deploy Functions
 
 cell calculate_dao_initial_state(
     slice deployer_address,
@@ -103,34 +103,34 @@ slice calculate_dao_address(cell dao_initial_state) {
     .begin_parse();
 }
 
-;; Points Seller Deploy Functions
+;; blago Seller Deploy Functions
 
-cell calculate_points_seller_initial_state(
-    int points_seller_next_index,
-    cell points_seller_code
+cell calculate_blago_seller_initial_state(
+    int blago_seller_next_index,
+    cell blago_seller_code
 ) {
-    cell points_seller_data = 
+    cell blago_seller_data = 
     begin_cell()
         .store_int(0, 1) ;; int1 active?
         .store_slice(my_address()) ;; slice dao_master
-        .store_uint(points_seller_next_index, 32)
+        .store_uint(blago_seller_next_index, 32)
     .end_cell();
     return (
         begin_cell()
         .store_uint(0, 2)
-        .store_dict(points_seller_code)
-        .store_dict(points_seller_data)
+        .store_dict(blago_seller_code)
+        .store_dict(blago_seller_data)
         .store_uint(0, 1)
     .end_cell()
     );
 }
 
-slice calculate_points_seller_address(cell points_seller_initial_state) {
+slice calculate_blago_seller_address(cell blago_seller_initial_state) {
     return 
     begin_cell()
         .store_uint(4, 3)
         .store_int(0, 8)
-        .store_uint(cell_hash(points_seller_initial_state), 256)
+        .store_uint(cell_hash(blago_seller_initial_state), 256)
     .end_cell()
     .begin_parse();
 }
@@ -156,7 +156,7 @@ slice calculate_points_seller_address(cell points_seller_initial_state) {
             begin_cell()
                     .store_uint(op::deploy_dao, 32)
                     .store_coins(next_dao_transaction_fee)
-                    .store_coins(points_seller_creation_fee)
+                    .store_coins(blago_seller_creation_fee)
                 .end_cell()
         )
         .end_cell();
@@ -165,39 +165,39 @@ slice calculate_points_seller_address(cell points_seller_initial_state) {
         return ();
     }
     int op = in_msg_body~load_uint(32);
-    if (op == op::start_points_sale) {
-        ~strdump("Start initiating points sale");
+    if (op == op::start_blago_sale) {
+        ~strdump("Start initiating blago sale");
         slice dao = in_msg_body~load_msg_addr();
         slice seller_address = in_msg_body~load_msg_addr();
         slice buyer_address = in_msg_body~load_msg_addr();
         int price = in_msg_body~load_coins();
-        int approval_points_for_sale = in_msg_body~load_uint(32);
-        int profit_points_for_sale = in_msg_body~load_uint(32);
+        int approval_blago_for_sale = in_msg_body~load_uint(32);
+        int profit_blago_for_sale = in_msg_body~load_uint(32);
         ~strdump("Create deploy message");
-        cell points_seller_initial_state = calculate_points_seller_initial_state(points_seller_next_index, points_seller_code);
-        slice points_seller_address = calculate_points_seller_address(points_seller_initial_state);
+        cell blago_seller_initial_state = calculate_blago_seller_initial_state(blago_seller_next_index, blago_seller_code);
+        slice blago_seller_address = calculate_blago_seller_address(blago_seller_initial_state);
         cell message = begin_cell()
             .store_uint(0x18, 6)
-            .store_slice(points_seller_address)
+            .store_slice(blago_seller_address)
             .store_coins(100000000)
             .store_uint(7, 108)
-            .store_ref(points_seller_initial_state)
+            .store_ref(blago_seller_initial_state)
             .store_ref(
             begin_cell()
-                    .store_uint(op::start_points_sale, 32)
+                    .store_uint(op::start_blago_sale, 32)
                     .store_slice(dao)
                     .store_slice(seller_address)
                     .store_slice(buyer_address)
                     .store_coins(price)
-                    .store_uint(approval_points_for_sale, 32)
-                    .store_uint(profit_points_for_sale, 32)
+                    .store_uint(approval_blago_for_sale, 32)
+                    .store_uint(profit_blago_for_sale, 32)
                 .end_cell()
         )
         .end_cell();
         ~strdump("Send deploy message");
         send_raw_message(message, 0);
-        ~strdump("Update points_seller_next_index");
-        points_seller_next_index = points_seller_next_index + 1;
+        ~strdump("Update blago_seller_next_index");
+        blago_seller_next_index = blago_seller_next_index + 1;
         save_data();
         return ();
     }
@@ -213,9 +213,9 @@ slice calculate_points_seller_address(cell points_seller_initial_state) {
     return calculate_dao_address(calculate_dao_initial_state(deployer_address, dao_code));
 }
 
-(slice) get_points_seller_address_by_index(int index) method_id {
+(slice) get_blago_seller_address_by_index(int index) method_id {
     load_data();
-    return calculate_points_seller_address(calculate_points_seller_initial_state(index, points_seller_code));
+    return calculate_blago_seller_address(calculate_blago_seller_initial_state(index, blago_seller_code));
 }
 
 (int) get_next_dao_creation_fee() method_id {
