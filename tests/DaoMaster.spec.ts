@@ -207,7 +207,7 @@ describe('DaoMaster', () => {
         expect((await firstDao.getPendingInvitationData(BigInt(2))).approval_blago).toStrictEqual(BigInt(37));
         expect((await firstDao.getPendingInvitationData(BigInt(2))).profit_blago).toStrictEqual(BigInt(35));
 
-        // Wallet0 accepts invitation to A DAO
+        // Wallet0 accepts invitation to DAO
 
         const wallet0AcceptsInvitation = await firstDao.sendAcceptInvitationToDao(
             wallet0.getSender(),
@@ -240,7 +240,7 @@ describe('DaoMaster', () => {
         expect(DaoDataAfterWallet0In.total_approval_blago).toStrictEqual(BigInt(28));
         expect(DaoDataAfterWallet0In.total_profit_blago).toStrictEqual(BigInt(37));
 
-        // Wallet1 accepts invitation to A DAO
+        // Wallet1 accepts invitation to DAO
 
         const wallet1AcceptsInvitation = await firstDao.sendAcceptInvitationToDao(
             wallet1.getSender(),
@@ -273,7 +273,7 @@ describe('DaoMaster', () => {
         expect(DaoDataAfterWallet1In.total_approval_blago).toStrictEqual(BigInt(63));
         expect(DaoDataAfterWallet1In.total_profit_blago).toStrictEqual(BigInt(65));
 
-        // Wallet2 accepts invitation to A DAO
+        // Wallet2 accepts invitation to DAO
 
         const wallet2AcceptsInvitation = await firstDao.sendAcceptInvitationToDao(
             wallet2.getSender(),
@@ -412,7 +412,7 @@ describe('DaoMaster', () => {
     });
 
     it('Should Approve Transaction: Invite Address wallet3', async () => {
-        // Wallet0 approves Wallet3 invitation to A DAO
+        // Wallet0 approves Wallet3 invitation to DAO
 
         const wallet0ApprovesWallet3Invitation = await firstDao.sendApprove(
             wallet0.getSender(),
@@ -429,7 +429,7 @@ describe('DaoMaster', () => {
 
         printTransactionFees(wallet0ApprovesWallet3Invitation.transactions);
 
-        // Wallet2 approves Wallet3 invitation to A DAO
+        // Wallet2 approves Wallet3 invitation to DAO
 
         const wallet2ApprovesWallet3Invitation = await firstDao.sendApprove(
             wallet2.getSender(),
@@ -461,7 +461,7 @@ describe('DaoMaster', () => {
 
         printTransactionFees(wallet2ApprovesWallet3Invitation.transactions);
 
-        // Wallet3 accepts invitation to A DAO
+        // Wallet3 accepts invitation to DAO
 
         const wallet3AcceptsInvitation = await firstDao.sendAcceptInvitationToDao(
             wallet3.getSender(),
@@ -483,7 +483,7 @@ describe('DaoMaster', () => {
         expect(DaoDataAfterWallet2In.total_profit_blago).toStrictEqual(BigInt(146));
     });
 
-    it('Wallet3 should quit A DAO', async () => {
+    it('Wallet3 should quit DAO', async () => {
         const wallet0QuitsDao = await firstDao.sendQuitDao(wallet3.getSender(), toNano('0.33'));
 
         expect(wallet0QuitsDao.transactions).toHaveTransaction({
@@ -1307,7 +1307,7 @@ describe('DaoMaster', () => {
         expect(wallet2ApprovesPutUpBlagoForSale.transactions).toHaveTransaction({
             from: firstDao.address,
             to: DaoMaster.address,
-            op: DaoInternalOperations.StartPointSale,
+            op: DaoInternalOperations.StartBlagoSale,
             success: true,
         })
 
@@ -1316,7 +1316,7 @@ describe('DaoMaster', () => {
         expect(wallet2ApprovesPutUpBlagoForSale.transactions).toHaveTransaction({
             from: DaoMaster.address,
             to: blagoSellerAddress,
-            op: DaoInternalOperations.StartPointSale,
+            op: DaoInternalOperations.StartBlagoSale,
             deploy: true,
             success: true
         });

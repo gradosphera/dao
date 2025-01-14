@@ -1,0 +1,566 @@
+{
+  "Dao": {
+    "sendFunctions": {
+      "sendActivateDao": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "AgreementPercentNumerator": {
+          "type": "bigint | number",
+          "optional": false
+        },
+        "AgreementPercentDenominator": {
+          "type": "bigint | number",
+          "optional": false
+        },
+        "ProfitReservePercentNumerator": {
+          "type": "bigint | number",
+          "optional": false
+        },
+        "ProfitReservePercentDenominator": {
+          "type": "bigint | number",
+          "optional": false
+        },
+        "ProfitableAddresses": {
+          "type": "Cell",
+          "optional": false
+        },
+        "PendingInvitations": {
+          "type": "Cell",
+          "optional": false
+        }
+      },
+      "sendTopUpBalance": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "sendAcceptInvitationToDao": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Passcode": {
+          "type": "bigint | number",
+          "optional": false
+        }
+      },
+      "sendQuitDao": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "sendChangeMyAddress": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "NewAddress": {
+          "type": "Address",
+          "optional": false
+        }
+      },
+      "sendFundsToCollect": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "sendProposeInviteAddress": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "AddressToInvite": {
+          "type": "Address",
+          "optional": false
+        },
+        "ApprovalBlago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "ProfitBlago": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "sendProposeDeleteAddress": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "AddressToDelete": {
+          "type": "Address",
+          "optional": false
+        }
+      },
+      "sendProposeSendCollectFunds": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "ProfitableAddressPasscode": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "sendProposeDistributeTon": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "DistributionAmount": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "sendProposeArbitraryTransaction": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "Destination": {
+          "type": "Address",
+          "optional": false
+        },
+        "Amount": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "MsgBody": {
+          "type": "Cell",
+          "optional": false
+        }
+      },
+      "sendProposeUpdateAgreementPercent": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "AgreementPercentNumerator": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "AgreementPercentDenumerator": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "sendProposeTransferBlago": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "Recipient": {
+          "type": "Address",
+          "optional": false
+        },
+        "ApprovalBlago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "ProfitBlago": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "sendPutUpBlagoForSale": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "BlagoBuyer": {
+          "type": "Address",
+          "optional": false
+        },
+        "Price": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "ApprovalBlagoForSale": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "ProfitBlagoForSale": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "sendProposeDeletePendingInvitations": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "PendingInvitationsForRemoval": {
+          "type": "Cell",
+          "optional": false
+        }
+      },
+      "sendProposeDeletePendingTransactions": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "Deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "PendingTransactionsForRemoval": {
+          "type": "Cell",
+          "optional": false
+        }
+      },
+      "sendApprove": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        },
+        "TransactionIndex": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      }
+    },
+    "getFunctions": {
+      "getDaoStatus": {},
+      "getPendingInvitationData": {
+        "passcode": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "getPendingTransactionsData": {
+        "key": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "getAuthorizedAddressData": {
+        "authorized_address_cell": {
+          "type": "Cell",
+          "optional": false
+        }
+      },
+      "getDaoData": {}
+    },
+    "path": ".\\wrappers\\Dao.ts",
+    "deploy": {
+      "canBeCreatedFromConfig": true,
+      "configType": {
+        "Active": {
+          "type": "number",
+          "optional": false
+        },
+        "RootAddress": {
+          "type": "Address",
+          "optional": false
+        },
+        "DeployerAddressSHA256": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "codeHex": "b5ee9c72410276010026e7000114ff00f4a413f4bcf2c80b01020162026504f6d0eda2edfb20c700925f04e001d0d30331fa403001d31f8d0454dd185c9d081b1bd85917d9185d184a0a60fe1430ed44d0d20101f861f841fe20f861fa4001f862f842fe20f862fa4001f863f843fe20f863f841c0ffe300f841c000e300f841c0019130e30d8bf456e64206c6f61645f6461746128298fe1430216d6e6f030490c004e30221c0039134e30d20c00c8eb46c228d0754dd185c9d081d1bdc1a5b99c81d5c08184819185bc818985b185b98d960fe143001f901f84e8307f40e6fa131f2e29ae020c009042a634502fe338d0694dd185c9d081d1c985b9cd858dd1a5bdb88185c1c1c9bdd985b20fe1430f84cfe20f86c02d31f308d0694dd185c9d081cd95b99195c88185d5d1a1bdc9a5e985d1a5bdba0fe143021f901f84e8307f40e6fa1f2e29a8d0514dd185c9d081c1bda5b9d1cc81c185c9cda5b99e0fe1430fa4031d31f89fe143001fe200506001e617070726f76616c5f706f696e747302fe01d31f308bd70726f6669745f706f696e74738fe1430fe20308d0911d95d081d1c985b9cd858dd1a5bdb88189e481d1c985b9cd858dd1a5bdb97da5b99195e20fe143001fe20f84d52108020f40f6fa1fe20f2e29b8d0454185c9cd9481d1c985b9cd858dd1a5bdba0fe1430d0d31f01fe2020c008e30001d31fd4f404d31f070800a28d0c10da1958dac8199d5b991cc81cdd59999a595b98de48199bdc881c1d5d17dd5c17dc1bda5b9d1cd7d99bdc97dcd85b1960fe143006fe20f851fe20f871f845fe20f865f8515210a1f845bcf2e29c0603e4308d08d0591908185c1c1c9bdd99481d1bc8185c1c1c9bdd985b1cc8191a58dd1a5bdb985c9e60fe143027f901c8c9d040138307f436f2e29d8bf436f756e7420617070726f76616c738fe1430f84ff846a8f847a9045027a089fe1430f84d52608020f45b01f86df2e29e89fe14305207bc090a0b006c44656c657465206f6c64207472616e73616374696f6e2073746174652066726f6d2070656e64696e675f7472616e73616374696f6e730068537461727420636865636b2069662073756666696369656e7420617070726f76616c7320746f20737461727420616374696f6e7302c68e5f36378d0fd4d85d99481b995dc81d1c985b9cd858dd1a5bdb881cdd185d19481a59881b9bdd081cdd59999a58da595b9d081c1bda5b9d1cc8199bdc881858dd1a5bdb9ce0fe143001c8cb1fcb1f15cc12f400cb1fc9f84d41308020f417f86de30d0c6304fe30316c2220d022c001e3023121c002e30221c0518ee932338d0bd4dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e8814d95b990815da5d1a191c985dc8119d5b991ce0fe1430d31f30f84a8020f40f6fa1f2e29fd0fa40308051c8cb1fc9718018c8cb055003cf16821013ab6680fa0212cb6accc970fb000d103d1202fc33348d0a94dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e88125b9d9a5d19481059191c995cdce0fe1430f84b8020f48f6fa53031a402fa40d31fd31f308d08905919081859191c995cdcc81d1bc81c195b991a5b99c81a5b9d9a5d185d1a5bdb9ce0fe1430f84b5427508020f417f86b89fe143078c80e0f004a53656e6420696e7669746174696f6e20746f20617574686f72697a65645f61646472657373014acb1f14cb1f13cb1f14cb1fc9718018c8cb055003cf168209c9c380fa0212cb6accc970fb003d02fc32338d0a94dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e8811195b195d19481059191c995cdce0fe1430fa40308d05511958dc99585cd9481d1bdd185b081c1bda5b9d1ce0fe1430f901f84e52108307f40e6fa130fa4031d31fd31f30f84f58a1f86ff85001a1f87089fe1430f84e8307f45b30f86e113d003044656c65746520616464726573732066726f6d206469637404fee021c0048ff532338d0a94dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e88111a5cdd1c9a589d5d1948151bdba0fe1430fa00308d0a54dd185c9d081cd95b991a5b99c81513d3881d1bc8185d5d1a1bdc9a5e9959081859191c995cdcd95ce0fe1430f84e8307f4866fa589fe1430908ae85f03e021c00513143d15005253746172742073656e64696e6720544f4e20746f20617574686f72697a656420616464726573736573007e8be496e207768696c65206379636c658fe143001fa40d31f31d31f30f8505240a90401a8708010c8cb055003cf1601fa02cb6ac970fb00f84e8307f47c6fa504e08ede328d0c54dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e88105c989a5d1c985c9e48151c985b9cd858dd1a5bdba0fe143001fa40d31fd430f85116a15210b9f2e29c718018c8cb055003cf1601fa02cb6a13ccc970fb00e03420c006e30220c007e3023120c0083d161720018c318d0d14dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e88155c19185d19481059dc99595b595b9d0814195c98d95b9d20fe143002d31f01f866d31f30f8673d03fc8d0ad4dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e88151c985b9cd9995c88141bda5b9d1ce0fe14308d05d1d95d081d1c985b9cd858dd1a5bdb97da5b999bd7d8dce0fe143003fa4001fe2001fa4001fe2001d31f01fe2001d31f30fe2089fe143089fe143003f901f84e52108307f40e6fa1f2e29a18501900385374657020302e2055706461746520706f696e74732073656e64657202fcfa40d31fd31ff404308d07155c19185d19481c1bda5b9d1cd7dcd95b99195c97da5b999bd7d8dce0fe14305125a15117a1228020f4866fa53291018ae8308d0cd4dd195c080c4e8813995dc814dd185d194813d98814d95b99195c881a5b88185d5d1a1bdc9a5e995917d859191c995cdcd95ce0fe14305315a15318a101511a03fcc00001c000b08e31388b36572728fe14306dc85004cf16cb1f17cb1ff400c9d08b36572728fe1430f84e128307f416f86e8b36572728fe1430e30d8d07d4dd195c080c8e88155c19185d19481c1bda5b9d1cc81c9958da5c1a595b9d20fe143053026d24f901f84e52108307f40e6fa19130e30dc826cf1614cb1f12cb1f1b571c00b210245f048d1011195b195d19481cd95b99195c88199c9bdb48185d5d1a1bdc9a5e995917d859191c995cdcd95cc81a5988185b1b081c1bda5b9d1cc81d1c985b9cd9995c995920fe143004f901f84e8307f45b01f86ef2e29a0374f400c9d0f84e128307f416f86e8d0614dd195c080c0e88155c19185d19481c9958da5c1a595b9d20fe143021f901f84e52108307f40e6fa1e30f1d1f3d02f06c418d05d49958da5c1a595b9d081a5cc8185d5d1a1bdc9a5e995920fe14308d0514185c9cd9481c9958da5c1a595b9d081a5b999be0fe1430fa4031d31f31d31f31f404308d07555c19185d19481c9958da5c1a595b9d081d1bdd185b081c1bda5b9d1ce0fe143089fe1430218020f4866fa5908ae85f045b1e001e52038020f4363051128020f47c6fa500de30348d09149958da595c1a595b9d08185919081d1bc8185d5d1a1bdc9a5e995917d859191c995cdce0fe14308d09505919081c9958da5c1a595b9d081d1bc8185d5d1a1bdc9a5e995917d859191c995cdcd95ce0fe14306dc85003cf16cb1f12cb1ff400c9d0f84e128307f416f86e031ce30220c009e30220c00ae302303121242801fc5b8d0c94dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e88141d5d08155c08141bda5b9d1cc8119bdc8814d85b1960fe1430fa4001fe2001fa4001fe2001fa0001fe2001d31f01fe2001d31f30fe208d07d4995c5d595cdd081b585cdd195c881d1bc81a5b9a5d1a585d19481cd85b1960fe14308052c8220156cb1ff828cf165005cf165003cf1601fa02cb1fcb1fc9718018c8cb05f842cf16f845fa02cb6accc971fb002300ea8d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe1430db3102fe8d0d94dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e8811195b195d194814195b991a5b99c8125b9d9a5d185d1a5bdb9ce0fe143002f404308d0c14185c9cd9481c195b991a5b99d7da5b9d9a5d185d1a5bdb9cd7d99bdc97dc995b5bdd985b08191a58dd1a5bdb985c9e60fe1430208020f4866fa5328a252600022102f08ae85f038d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe1430012744007e8d0954995b5bdd99481c195b991a5b99d7da5b9d9a5d185d1a5bdb97d99bdc97dc995b5bdd985b20fe1430f84b52108020f45b30f86b228020f47c6fa5303101fe8d0dd4dd185c9d08151c985b9cd858dd1a5bdb88105c1c1c9bdd985b0e8811195b195d194814195b991a5b99c8151c985b9cd858dd1a5bdb9ce0fe143002f404308d0c54185c9cd9481c195b991a5b99d7dd1c985b9cd858dd1a5bdb9cd7d99bdc97dc995b5bdd985b08191a58dd1a5bdb985c9e60fe1430208020f4866fa529018c3291018e3f8d0994995b5bdd99481c195b991a5b99d7dd1c985b9cd858dd1a5bdb97d99bdc97dc995b5bdd985b20fe1430f84d52108020f45b30f86d218020f47c6fa532e85b3d01fa8d0694dd185c9d081d1c985b9cd858dd1a5bdb881c1c9bdc1bdcd85b20fe1430f84cfe20f86c8d0994dd185c9d081c1c9bdc1bdcd85b081a5b9a5d1a585d1bdc88185d5d1a1bdc9a5e985d1a5bdba0fe143022f901f84e8307f40e6fa1f2e29a8d0594dd185c9d081c1c9bdc1bdcd85b081c185c9cda5b99e0fe1430212b04c2d70b1ffe2022d70b1f23d74c8d0850dbdb9d995c9d081d1c985b9cd858dd1a5bdb97da5b999bc81d1bc81cdb1a58d960fe143020d08d0494d95d081e995c9bc8185c1c1c9bdd985b1ce0fe14306d7025c001e30225c002e30225c051e30225c0042c2e2f3101fe3335353636368d0794dd185c9d08141c9bdc1bdcd85b0e88125b9d9a5d19481059191c995cdce0fe143001fa4001fe2001d31f01fe2001d31f30fe208d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe14306dc85004cf1612cb1fcb1ff400c925c8cb1f15cb1f142d012ccc13f400cb1fc9f84cf84d8020f417f86df84ca4f86c3d01fe3235353636368d0a94dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e8811195b195d19481059191c995cdce0fe14308d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe143025c8cb1f15cb1f13cc13f400cb1fc9f84cf84d8020f417f86df84ca43301fe3235353636368d0bd4dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e8814d95b990815da5d1a191c985dc8119d5b991ce0fe14308d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe143025c8cb1f15cb1f13cc13f400cb1fc9f84cf84d8020f4173001f6f86df84ca4f86c8d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe143001440420e30225c005e3023b24c006e30224c0073234363701fe3235353636368d0a94dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e88111a5cdd1c9a589d5d1948151bdba0fe14308d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe143025c8cb1f15cb1f13cc13f400cb1fc9f84cf84d8020f417f86df84ca43301ecf86c8d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe1430014402fc363637378d0c54dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e88105c989a5d1c985c9e48151c985b9cd858dd1a5bdba0fe143005fa4031fa00308d07d0da1958dac81d1a19481a5b9d1959dc9a5d1e481bd9881c995cd95c9d995ce0fe1430f85118a117bbf2e29c89fe143025c8cb1f14cb1f14cc133b350128f400cb1fc9f84cf84d8020f417f86df84ca4f86c3d01fe31343435358d0d14dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e88155c19185d19481059dc99595b595b9d0814195c98d95b9d20fe14308d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe143024c8cb1f14cb1fcc12f40013cb1fc9f84cf84d3f0422e30224c008e302313422c009e30222c00a383a3e4002fe3235378d0ad4dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e88151c985b9cd9995c88141bda5b9d1ce0fe143003fa40d31fd31f308d0650da1958dac81c1bda5b9d1cc8185d985a5b18589a5b1a5d1e60fe143004d31fd31f305222bbf2e29d5240bbf2e29e89fe1430c85007cf1601cf1615cb1fcb1fc93b39013c23c8cb1f12cb1fcc13f40013cb1fc9f84cf84d8020f417f86df84ca4f86c3d02fe3235378d0c94dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e88141d5d08155c08141bda5b9d1cc8119bdc8814d85b1960fe143003fa40fa00d31f01fe2001d31f30fe208d0650da1958dac81c1bda5b9d1cc8185d985a5b18589a5b1a5d1e60fe143005d31fd31f305222bbf2e29d5250bbf2e29e89fe143b3c004e416464207472616e73616374696f6e20746f2070656e64696e675f7472616e73616374696f6e73016c30f84cfe20f86cc85008cf1658cf1601fa0215cb1fcb1fc923c8cb1f12cb1fcc13f40013cb1fc9f84cf84d8020f417f86df84ca4f86c3d01e88d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe1430014401fe3435358d0d94dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e8811195b195d194814195b991a5b99c8125b9d9a5d185d1a5bdb9ce0fe14308d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe143024c8cb1f14cb1fcc12f40013cb1fc9f84cf84d3f01fc8020f417f86df84ca4f86c8d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe143044010ae3025f04344101fc3435358d0dd4dd185c9d08151c985b9cd858dd1a5bdb88141c9bdc1bdcd85b0e8811195b195d194814195b991a5b99c8151c985b9cd858dd1a5bdb9ce0fe14308d09d05919081d1c985b9cd858dd1a5bdb881d1bc81c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe143024c8cb1f14cb1fcc12f40013cb1fc9f84c42011af84d8020f417f86df84ca4f86c4301e68d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe143044003c01c8cb1fcb1fc9718010c8cb05f842cf16f844fa02cb6accc971fb00db3101fe8e7c8d0654dd185c9d08185c1c1c9bdd985b081c995d9bd8d85d1a5bdba0fe143021f901f84e8307f40e6fa1f2e29a8d0514dd185c9d081c1bda5b9d1cc81c185c9cda5b99e0fe1430fa4031d31f8bf617070726f76616c5f706f696e74738fe143001fe2030d31f308bd70726f6669745f706f696e74738fe1430fe2030de46047e20c0518eab31328d05d4dd185c9d081c1c9bd99a5d0818dbdb1b1958dd1a5b99e0fe1430f848a8f849a904f851a0f871e03221c00ae30221c00be30221c0066347494b02928d0654dd185c9d0818da185b99da5b99c81b5e481859191c995cdce0fe143002fa40308d0414dd185c9d081d591a58dd17d9d95d0fe0fe143002f901f84e8307f40e6fa1923031e30d486300d08d0454d95b99195c88185d5d1a1bdc9a5e995920fe1430fa4031d31f01fe2001d31f01fe2001f404308d07d4dd185c9d08185d5d1a1bdc9a5e995917d859191c995cdcc81d5c19185d1960fe1430c825cf1613cb1fcb1ff400c9d002f901f84e10238307f416f86e028c328d04d4dd185c9d081c5d5a5d1a5b99c81048111053e0fe143021f901f84e8307f40e6fa18be456e642075646963745f6765743f8fe143001fa405242c70512b0923031e30d4a6300ec8d0454d95b99195c88185d5d1a1bdc9a5e995920fe1430d31fd31f308d0814dd185c9d08185d5d1a1bdc9a5e995917d859191c995cdcc81c995b5bdd985b20fe143003f901f84e8307f45b01f86ef2e29f8d04d4dd185c9d081c1bda5b9d1cc81d5c19185d1960fe1430f84f01a1f86ff85058a1f87004a28f468d08d4dd185c9d081858d8d95c1d1a5b99c81a5b9d9a5d185d1a5bdb881d1bc81048111053e0fe143002d31f30f84b8020f40f6fa101d0fa405341c70513b09410235f03e30de021c054e30221c0024c634e5e01fe8d0454d95b99195c88185d5d1a1bdc9a5e995920fe143001d31f01fe2001d31f30fe206dc85004cf165220cb1f5210cb1f13f400c9d08d07515b9908185d5d1a1bdc9a5e995917d859191c995cdcc81859191a5b99e0fe143004f901f84e10258307f416f86e8d04d4dd185c9d081c1bda5b9d1cc81d5c19185d1960fe14304d001af84f5003a0f86ff85058a0f87001fe8d08d4dd185c9d081d1a1948151c985b9cd9995c8813d988109bdd59da1d08141bda5b9d1ce0fe14308d0594185c9cd9481d1c985b9cd858dd1a5bdb881a5b999be0fe143002fa4001fe2001fa4001fe2001d31f01fe2001d31f30fe208d0714dd195c080c0b88155c19185d19481c1bda5b9d1cc81cd95b99195ca0fe14304f04c689fe143003f901f84e52108307f40e6fa1f2e29afa40d31fd31ff404308d07155c19185d19481c1bda5b9d1cd7dcd95b99195c97da5b999bd7d8dce0fe14305125a15117a1228020f4866fa53291018ae83089fe14305315a15318a101c00001c000b050515455002c47657420706f696e74732073656e64657220696e666f02fe8d06d55c19185d19481c195b991a5b99c81d1c985b9cd858dd1a5bdb9ce0fe1430f84d52108020f40f6fa130d0d31fd31fd4f404d31f308d0a155c19185d1948185c1c1c9bdd985b1cc81a5b881c195b991a5b99c81d1c985b9cd858dd1a5bdb9ce0fe143052a28307f45b30511ba189fe143004c8cb1f13cb1fcccccb1fc9525300325061636b206e6577207472616e73616374696f6e2063656c6c0068f84d52208020f417f86d8d0714d95b99195c88185c1c1c9bdd9959081d1c985b9cd858dd1a5bdb9ce0fe1430238020f47c6fa53200665374657020313a204e6577205374617465204f662053656e64657220696e20617574686f72697a65645f61646472657373657303fe8e31398b36572728fe14306dc85004cf16cb1f18cb1ff400c9d08b36572728fe1430f84e128307f416f86e8b36572728fe1430e30d8d07d4dd195c080c8e88155c19185d19481c1bda5b9d1cc81c9958da5c1a595b9d20fe143053026d24f901f84e52108307f40e6fa19130e30dc826cf1614cb1f12cb1ff400c9d0f84e1256575900b210245f048d1011195b195d19481cd95b99195c88199c9bdb48185d5d1a1bdc9a5e995917d859191c995cdcd95cc81a5988185b1b081c1bda5b9d1cc81d1c985b9cd9995c995920fe143005f901f84e8307f45b01f86ef2e29a01906c22328d0491d95d081c9958da5c1a595b9d081a5b999be0fe143001fa4001fe2030d31f01fe2001d31f01fe2001f40430fe205124a05116a0228020f4866fa53291018ae83040035800ec8d06d55c19185d19481c195b991a5b99c81d1c985b9cd858dd1a5bdb9ce0fe1430f84d52108020f40f6fa130d0d31fd31fd4f404d31f302aa08d06541858dac81b995dc81d1c985b9cd858dd1a5bdb8818d95b1b20fe143004c8cb1f13cb1fcccccb1fc9f84d52208020f417f86d238020f47c6fa53203668307f416f86e8d0614dd195c080c0e88155c19185d19481c9958da5c1a595b9d20fe143021f901f84e52108307f40e6fa1e30f5a5d6302f46c418d05d49958da5c1a595b9d081a5cc8185d5d1a1bdc9a5e995920fe14308d0514185c9cd9481c9958da5c1a595b9d081a5b999be0fe1430fa4031d31f31d31f31f404308d07555c19185d19481c9958da5c1a595b9d081d1bdd185b081c1bda5b9d1ce0fe143089fe1430228020f4866fa5908ae810345f045b5c003455706461746520726563697069656e7420617070726f76616c73001e52038020f4363051138020f47c6fa500e030358d09149958da595c1a595b9d08185919081d1bc8185d5d1a1bdc9a5e995917d859191c995cdce0fe14308d09505919081c9958da5c1a595b9d081d1bc8185d5d1a1bdc9a5e995917d859191c995cdcd95ce0fe14306dc85003cf16cb1f12cb1ff400c9d0f84e41308307f416f86e02b28ecb8d0594dd185c9d081048111053c81058dd1a5d985d1a5bdba0fe1430f843c705f2e2a0f841c000f2e2a201d31f01f866d31f01f867d31f01f868d31f01f869f40401f86af40430f86bf84be021c000e3025f03840ff2f05f6002b68d0794dd185c9d081cd95b991a5b99c81a5b9d9a5d195cc81d1bc81048111053e0fe1430208020f4876fa5908ae85f038d0895195c9b5a5b985d19481cd95b991a5b99c81a5b9d9a5d195cc81d1bc81048111053e0fe143071f861626302c28d07d4dd185c9d0819195c1b1bde481b595cdcd859d9481c1c9bd8d95cdcda5b99e0fe1430f842c705f2e2a101fa0001f864f845fe20f865fa0001f865f845fe20f86570f86670f86720d749c2009130e30d6df86d6df86e70f86f70f87070f861616301d2d31f01f866d31f01f867f40430f86bf84b8d0794dd185c9d081cd95b991a5b99c81a5b9d9a5d195cc81d1bc81048111053e0fe1430208020f4876fa5908ae85f038d0895195c9b5a5b985d19481cd95b991a5b99c81a5b9d9a5d195cc81d1bc81048111053e0fe14306200f48d0614dd185c9d081cd95b991a5b99c81a5b9d9a5d185d1a5bdba0fe143001d0fa40d31f01fe2001d31f30fe2078c8cb1f5240cb1f12cb1fcb1fc9718018c8cb055003cf168209c9c380fa0212cb6accc970fb00a453018020f40f6fa18d05915b99081cd95b991a5b99c81a5b9d9a5d185d1a5bdba0fe14301201e88d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f850f84ff84ef84df84cf84bf84af849f848f847f846f841c8ca01f842cf16f843cf16f844fa02f845fa02cb1fcb1fcb1fcb1ff400f400cb1ff400f400cb1fcb1ff851fa02c9ed548bf456e6420736176655f6461746128298fe14307064003801c8cb1fcb1fc9718010c8cb05f842cf16f844fa02cb6accc971fb000201206669020148676803edb6abf1a08a9ba30b93a103637b0b22fb230ba309414c1fc2861da89a1a40203f0c3f083fc41f0c3f48003f0c5f085fc41f0c5f48003f0c7f087fc41f0c7f08381ffc601f0838001c601f08380032261c61b17e8adcc840d8dec2c8bec8c2e8c250531fc2861f0970041e81edf4261a1f481a63fa63e6106d6e6f03f3b45871a08a9ba30b93a103637b0b22fb230ba309414c1fc2861da89a1a40203f0c3f083fc41f0c3f48003f0c5f085fc41f0c5f48003f0c7f087fc41f0c7f08381ffc601f0838001c601f08380032261c61b17e8adcc840d8dec2c8bec8c2e8c250531fc2861f09b0041e81edf4261a1a63fa63fa9e809a63e6106d6e6f0201206a6c04fbbb6828d0454dd185c9d081b1bd85917d9185d184a0a60fe1430ed44d0d20101f861f841fe20f861fa4001f862f842fe20f862fa4001f863f843fe20f863f841c0ffe300f841c000e300f841c0019130e30d8bf456e64206c6f61645f6461746128298fe1430f841f842f843f844f846f847f848f849f84af84bf84df84e86d6e6f6b000cf84ff850f85103fbb84ec8d0454dd185c9d081b1bd85917d9185d184a0a60fe1430ed44d0d20101f861f841fe20f861fa4001f862f842fe20f862fa4001f863f843fe20f863f841c0ffe300f841c000e300f841c0019130e30d8bf456e64206c6f61645f6461746128298fe1430d0fa4030f901f84e8307f40e6fa130fa40d31fd31ff4043086d6e6f00768bc737461747573203d3d202d318fe143070f86470f86570f86670f86770f86870f8696df86a6df86b70f86c6df86d6df86e70f86f70f87070f871007c8bb737461747573203d3d20308fe1430fa0001f864fa0001f86570f86670f86770f86870f8696df86a6df86b70f86c6df86d6df86e70f86f70f87070f87101fe8bb737461747573203d3d20318fe1430fa0001f8648bf7472616e73616374696f6e5f6665658fe1430f844fe20f864fa0001f8658d069c1bda5b9d1cd7dcd95b1b195c97d8dc99585d1a5bdb97d9995960fe1430f845fe20f865d31f01f8668d06d859dc99595b595b9d17dc195c98d95b9d17db9d5b595c985d1bdca0fe147003fc30f846fe20f866d31f01f8678d075859dc99595b595b9d17dc195c98d95b9d17d9195b9bdb5a5b985d1bdca0fe1430f847fe20f867d31f01f8688d081c1c9bd99a5d17dc995cd95c9d9957dc195c98d95b9d17db9d5b595c985d1bdca0fe1430f848fe20f868d31f01f86989fe1430f849fe20f869f40401f86a89fe1430717273004470726f6669745f726573657276655f70657263656e745f64656e6f6d696e61746f72002870726f66697461626c655f61646472657373657302fef84afe20f86af40401f86b8d04dc195b991a5b99d7da5b9d9a5d185d1a5bdb9ce0fe1430f84bfe20f86bd31f01f86c8d059b995e1d17dd1c985b9cd858dd1a5bdb97da5b99195e20fe1430f84cfe20f86cf40401f86d8d051c195b991a5b99d7dd1c985b9cd858dd1a5bdb9ce0fe1430f84dfe20f86df40401f86e89fe143074750028617574686f72697a65645f61646472657373657300eef84efe20f86ed31f01f86f8d055d1bdd185b17d85c1c1c9bdd985b17dc1bda5b9d1ce0fe1430f84ffe20f86fd31f01f8708d04dd1bdd185b17dc1c9bd99a5d17dc1bda5b9d1ce0fe1430f850fe20f870fa0001f8718d055d1bdd185b17dc1c9bd99a5d17dc995cd95c9d995920fe1430f851fe20f871d126a8840e"
+    },
+    "definedTypes": {
+      "DaoConfig": {
+        "Active": {
+          "type": "number",
+          "optional": false
+        },
+        "RootAddress": {
+          "type": "Address",
+          "optional": false
+        },
+        "DeployerAddressSHA256": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "PendingInvitationsData": {
+        "authorized_address": {
+          "type": "Address",
+          "optional": false
+        },
+        "approval_blago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "profit_blago": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "PendingTransactionsData": {
+        "transaction_type": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "deadline": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "transaction_info": {
+          "type": "Cell",
+          "optional": false
+        },
+        "approvals": {
+          "type": "Cell | null",
+          "optional": false
+        },
+        "approval_blago_recieved": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "AuthorizedAddressData": {
+        "authorized_address": {
+          "type": "Address",
+          "optional": false
+        },
+        "approval_blago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "profit_blago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "approved_transactions": {
+          "type": "Cell | null",
+          "optional": false
+        }
+      },
+      "DaoData": {
+        "active": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "root_address": {
+          "type": "Address",
+          "optional": false
+        },
+        "deployer_address": {
+          "type": "Address",
+          "optional": false
+        },
+        "transaction_fee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "agreement_percent_numerator": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "agreement_percent_denominator": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "profit_reserve_percent_numerator": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "profit_reserve_percent_denominator": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "profitable_addresses": {
+          "type": "Cell | null",
+          "optional": false
+        },
+        "pending_invitations": {
+          "type": "Cell | null",
+          "optional": false
+        },
+        "pending_transactions": {
+          "type": "Cell | null",
+          "optional": false
+        },
+        "authorized_addresses": {
+          "type": "Cell | null",
+          "optional": false
+        },
+        "total_approval_blago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "total_profit_blago": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "total_profit_reserved": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      }
+    }
+  },
+  "DaoMaster": {
+    "sendFunctions": {
+      "sendDeploy": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        }
+      },
+      "sendDeployDao": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        }
+      }
+    },
+    "getFunctions": {
+      "getDaoAddressByDeployerAddress": {
+        "deployer_address": {
+          "type": "Address",
+          "optional": false
+        }
+      },
+      "getBlagoSellerAddressByIndex": {
+        "index": {
+          "type": "bigint",
+          "optional": false
+        }
+      }
+    },
+    "path": ".\\wrappers\\DaoMaster.ts",
+    "deploy": {
+      "canBeCreatedFromConfig": true,
+      "configType": {
+        "OwnerAddress": {
+          "type": "Address",
+          "optional": false
+        },
+        "DaoCode": {
+          "type": "Cell",
+          "optional": false
+        },
+        "NextDaoCreationFee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "NextDaoTransactionFee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "NextDaoCreationFeeDiscount": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "NextDaoTransactionFeeIncrease": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "MaxDaoTransactionFee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "BlagoSeller": {
+          "type": "Cell",
+          "optional": false
+        },
+        "BlagoSellerCreationFee": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      },
+      "codeHex": "b5ee9c7241021701000320000114ff00f4a413f4bcf2c80b0102016202100202cd030b020120040a033b433d0d30331fa4030db3c22c7008e8c5bd31f21c052e30230c00130e30d815050801fe318d0714dd185c9d081a5b9a5d1a585d1a5b99c81c1bda5b9d1cc81cd85b1960fe1430fa40fa40fa40fa00d31fd31f308d0550dc99585d194819195c1b1bde481b595cdcd859d960fe1430f849f848f00520f0068052c8cb1f5008cf165006cf165004cf1658fa02cb1fcb1fc9778018c8cb055004cf16821005f5e100fa0206019813cb6bccccc98d04d4d95b990819195c1b1bde481b595cdcd859d960fe143070fb008d07d55c19185d19481c1bda5b9d1cd7dcd95b1b195c97db995e1d17da5b99195e20fe1430f849a4f8690700aa8d0454dd185c9d081cd85d9957d9185d184a0a60fe1430f849f848f842c8f841cf16ccf843fa02f844fa02f845fa02f846fa02f847fa02cccb1ff84afa02c9ed548bf456e6420736176655f6461746128298fe143001fe328d0514dd185c9d08184819185bc818dc99585d1a5bdba0fe1430f843bcf2e29a8d0550dc99585d194819195c1b1bde481b595cdcd859d960fe1430f842f00320f00470c8cb1ff844fa02f84afa02c9778018c8cb055003cf16821005f5e100fa0212cb6b12ccccc98d04d4d95b990819195c1b1bde481b595cdcd859d96009000cfe143070fb00003357fc8ca01f828cf1658cf16c97020c8cb0113f400f400cb00c980201200c0f0201200d0e001b3e401c1d3232c0b281f2fff2742000331c3232803e0a33c584b2c7f25c083232c044fd003d0032c03260001b4f9007074c8cb02ca07cbffc9d08020120111402015812130115b520bb679f085e007e0090150009b65eff08700115bd4f26d9e7c247802f80341501f68d0454dd185c9d081b1bd85917d9185d184a0a60fe1430ed44d0fa4001f861f841fe20f861d401f862f842fe20f862fa0001f863f843fe20f863fa0001f864f844fe20f864fa0001f865f845fe20f865fa0001f866f846fe20f866fa0001f867f847fe20f867d401f868f848fe20f868d31f01f869f849fe20f869160040fa0001f86af84afe20f86ad18bf456e64206c6f61645f6461746128298fe143063fac3b7"
+    },
+    "definedTypes": {
+      "DaoMasterConfig": {
+        "OwnerAddress": {
+          "type": "Address",
+          "optional": false
+        },
+        "DaoCode": {
+          "type": "Cell",
+          "optional": false
+        },
+        "NextDaoCreationFee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "NextDaoTransactionFee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "NextDaoCreationFeeDiscount": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "NextDaoTransactionFeeIncrease": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "MaxDaoTransactionFee": {
+          "type": "number | bigint",
+          "optional": false
+        },
+        "BlagoSeller": {
+          "type": "Cell",
+          "optional": false
+        },
+        "BlagoSellerCreationFee": {
+          "type": "number | bigint",
+          "optional": false
+        }
+      }
+    }
+  },
+  "BlagoSeller": {
+    "sendFunctions": {
+      "sendBuy": {
+        "value": {
+          "type": "bigint",
+          "optional": false
+        }
+      }
+    },
+    "getFunctions": {},
+    "path": ".\\wrappers\\BlagoSeller.ts",
+    "deploy": {
+      "canBeCreatedFromConfig": false
+    },
+    "definedTypes": {}
+  }
+}

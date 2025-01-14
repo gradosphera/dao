@@ -10,5 +10,5 @@ const int error::unsufficent_approval_blago = 669;
 const int error::unsufficent_profit_blago = 670;
 const int error::failed_authorized_address_removal = 671;
 const int error::sender_not_deployer = 672;
-const int error::sender_not_dao_master = 673;
+const int error::sender_not_a_dao_master = 673;
 const int error::status_not_initiated = 674;

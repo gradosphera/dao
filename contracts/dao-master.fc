@@ -2,9 +2,9 @@
 
 ;; Operation Codes
 
-const int op::deploy_dao = 0;
+const int op::deploy_a_dao = 0;
 const int op::withdraw_funds = 1;
-const int op::change_dao_master_owner = 2;
+const int op::change_a_dao_master_owner = 2;
 
 ;; Internal operations
 
@@ -13,12 +13,12 @@ const int op::start_blago_sale = 82;
 ;; Global variables
 
 global slice owner_address; ;; addr 257bits
-global cell dao_code; ;; ref 1
-global int next_dao_creation_fee; ;; uint32
-global int next_dao_transaction_fee; ;; uint32
-global int next_dao_creation_fee_discount;
-global int next_dao_transaction_fee_increase;
-global int max_dao_transaction_fee;
+global cell a_dao_code; ;; ref 1
+global int next_a_dao_creation_fee; ;; uint32
+global int next_a_dao_transaction_fee; ;; uint32
+global int next_a_dao_creation_fee_discount;
+global int next_a_dao_transaction_fee_increase;
+global int max_a_dao_transaction_fee;
 global cell blago_seller_code; ;; ref 2
 global int blago_seller_next_index; ;; uint32
 global int blago_seller_creation_fee; ;; uint32
@@ -30,18 +30,18 @@ global int blago_seller_creation_fee; ;; uint32
     slice ds = get_data().begin_parse();
     owner_address = ds~load_msg_addr();
     owner_address~dump();
-    dao_code = ds~load_ref();
-    dao_code~dump();
-    next_dao_creation_fee = ds~load_coins();
-    next_dao_creation_fee~dump();
-    next_dao_transaction_fee = ds~load_coins();
-    next_dao_transaction_fee~dump();
-    next_dao_creation_fee_discount = ds~load_coins();
-    next_dao_creation_fee_discount~dump();
-    next_dao_transaction_fee_increase = ds~load_coins();
-    next_dao_transaction_fee_increase~dump();
-    max_dao_transaction_fee = ds~load_coins();
-    max_dao_transaction_fee~dump();
+    a_dao_code = ds~load_ref();
+    a_dao_code~dump();
+    next_a_dao_creation_fee = ds~load_coins();
+    next_a_dao_creation_fee~dump();
+    next_a_dao_transaction_fee = ds~load_coins();
+    next_a_dao_transaction_fee~dump();
+    next_a_dao_creation_fee_discount = ds~load_coins();
+    next_a_dao_creation_fee_discount~dump();
+    next_a_dao_transaction_fee_increase = ds~load_coins();
+    next_a_dao_transaction_fee_increase~dump();
+    max_a_dao_transaction_fee = ds~load_coins();
+    max_a_dao_transaction_fee~dump();
     blago_seller_code = ds~load_ref();
     blago_seller_code~dump();
     blago_seller_next_index = ds~load_uint(32);
@@ -57,12 +57,12 @@ global int blago_seller_creation_fee; ;; uint32
     set_data(
         begin_cell()
             .store_slice(owner_address)
-            .store_ref(dao_code)
-            .store_coins(next_dao_creation_fee)
-            .store_coins(next_dao_transaction_fee)
-            .store_coins(next_dao_creation_fee_discount)
-            .store_coins(next_dao_transaction_fee_increase)
-            .store_coins(max_dao_transaction_fee)
+            .store_ref(a_dao_code)
+            .store_coins(next_a_dao_creation_fee)
+            .store_coins(next_a_dao_transaction_fee)
+            .store_coins(next_a_dao_creation_fee_discount)
+            .store_coins(next_a_dao_transaction_fee_increase)
+            .store_coins(max_a_dao_transaction_fee)
             .store_ref(blago_seller_code)
             .store_uint(blago_seller_next_index, 32)
             .store_coins(blago_seller_creation_fee)
@@ -73,37 +73,37 @@ global int blago_seller_creation_fee; ;; uint32
 
 ;; DAO Deploy Functions
 
-cell calculate_dao_initial_state(
+cell calculate_a_dao_initial_state(
     slice deployer_address,
-    cell dao_code
+    cell a_dao_code
 ) {
-    cell dao_data = 
+    cell a_dao_data = 
     begin_cell()
         .store_int(-1, 2) ;; int1 active?
-        .store_slice(my_address()) ;; slice dao_master
+        .store_slice(my_address()) ;; slice a_dao_master
         .store_slice(deployer_address)
     .end_cell();
     return (
         begin_cell()
         .store_uint(0, 2)
-        .store_dict(dao_code)
-        .store_dict(dao_data)
+        .store_dict(a_dao_code)
+        .store_dict(a_dao_data)
         .store_uint(0, 1)
     .end_cell()
     );
 }
 
-slice calculate_dao_address(cell dao_initial_state) {
+slice calculate_a_dao_address(cell a_dao_initial_state) {
     return 
     begin_cell()
         .store_uint(4, 3)
         .store_int(0, 8)
-        .store_uint(cell_hash(dao_initial_state), 256)
+        .store_uint(cell_hash(a_dao_initial_state), 256)
     .end_cell()
     .begin_parse();
 }
 
-;; blago Seller Deploy Functions
+;; Blago Seller Deploy Functions
 
 cell calculate_blago_seller_initial_state(
     int blago_seller_next_index,
@@ -112,7 +112,7 @@ cell calculate_blago_seller_initial_state(
     cell blago_seller_data = 
     begin_cell()
         .store_int(0, 1) ;; int1 active?
-        .store_slice(my_address()) ;; slice dao_master
+        .store_slice(my_address()) ;; slice a_dao_master
         .store_uint(blago_seller_next_index, 32)
     .end_cell();
     return (
@@ -142,20 +142,20 @@ slice calculate_blago_seller_address(cell blago_seller_initial_state) {
     load_data();
     if (in_msg_body.slice_empty?()) {
         ~strdump("Start a dao creation");
-        throw_unless(666, msg_value > next_dao_creation_fee);
+        throw_unless(666, msg_value > next_a_dao_creation_fee);
         ~strdump("Create deploy message");
-        cell dao_initial_state = calculate_dao_initial_state(sender_address, dao_code);
-        slice dao_address = calculate_dao_address(dao_initial_state);
+        cell a_dao_initial_state = calculate_a_dao_initial_state(sender_address, a_dao_code);
+        slice a_dao_address = calculate_a_dao_address(a_dao_initial_state);
         cell message = begin_cell()
             .store_uint(0x18, 6)
-            .store_slice(dao_address)
+            .store_slice(a_dao_address)
             .store_coins(1000000000)
             .store_uint(7, 108)
-            .store_ref(dao_initial_state)
+            .store_ref(a_dao_initial_state)
             .store_ref(
             begin_cell()
-                    .store_uint(op::deploy_dao, 32)
-                    .store_coins(next_dao_transaction_fee)
+                    .store_uint(op::deploy_a_dao, 32)
+                    .store_coins(next_a_dao_transaction_fee)
                     .store_coins(blago_seller_creation_fee)
                 .end_cell()
         )
@@ -167,7 +167,7 @@ slice calculate_blago_seller_address(cell blago_seller_initial_state) {
     int op = in_msg_body~load_uint(32);
     if (op == op::start_blago_sale) {
         ~strdump("Start initiating blago sale");
-        slice dao = in_msg_body~load_msg_addr();
+        slice a_dao = in_msg_body~load_msg_addr();
         slice seller_address = in_msg_body~load_msg_addr();
         slice buyer_address = in_msg_body~load_msg_addr();
         int price = in_msg_body~load_coins();
@@ -185,7 +185,7 @@ slice calculate_blago_seller_address(cell blago_seller_initial_state) {
             .store_ref(
             begin_cell()
                     .store_uint(op::start_blago_sale, 32)
-                    .store_slice(dao)
+                    .store_slice(a_dao)
                     .store_slice(seller_address)
                     .store_slice(buyer_address)
                     .store_coins(price)
@@ -208,9 +208,9 @@ slice calculate_blago_seller_address(cell blago_seller_initial_state) {
 
 ;; Custom get-methods
 
-(slice) get_dao_address_by_deployer_address(slice deployer_address) method_id {
+(slice) get_a_dao_address_by_deployer_address(slice deployer_address) method_id {
     load_data();
-    return calculate_dao_address(calculate_dao_initial_state(deployer_address, dao_code));
+    return calculate_a_dao_address(calculate_a_dao_initial_state(deployer_address, a_dao_code));
 }
 
 (slice) get_blago_seller_address_by_index(int index) method_id {
@@ -218,6 +218,6 @@ slice calculate_blago_seller_address(cell blago_seller_initial_state) {
     return calculate_blago_seller_address(calculate_blago_seller_initial_state(index, blago_seller_code));
 }
 
-(int) get_next_dao_creation_fee() method_id {
-    return next_dao_creation_fee;
+(int) get_next_a_dao_creation_fee() method_id {
+    return next_a_dao_creation_fee;
 }

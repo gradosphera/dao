@@ -101,7 +101,7 @@ export class Dao implements Contract {
         return new Dao(contractAddress(workchain, init), init);
     }
 
-    // Activate A Dao
+    // Activate Dao
 
     async sendActivateDao(
         provider: ContractProvider,
@@ -179,8 +179,8 @@ export class Dao implements Contract {
         Deadline: number | bigint,
         // cell transaction_info
         AddressToInvite: Address,
-        Approvalblago: number | bigint,
-        Profitblago: number | bigint,
+        ApprovalBlago: number | bigint,
+        ProfitBlago: number | bigint,
     ) {
         await provider.internal(via, {
             value,
@@ -193,8 +193,8 @@ export class Dao implements Contract {
                     // cell transaction_info
                     beginCell()
                         .storeAddress(AddressToInvite)
-                        .storeUint(Approvalblago, 32)
-                        .storeUint(Profitblago, 32)
+                        .storeUint(ApprovalBlago, 32)
+                        .storeUint(ProfitBlago, 32)
                         .endCell(),
                 )
                 .endCell(),
@@ -318,14 +318,14 @@ export class Dao implements Contract {
         });
     }
 
-    async sendProposeTransferblago(
+    async sendProposeTransferBlago(
         provider: ContractProvider,
         via: Sender,
         value: bigint,
         Deadline: number | bigint,
         Recipient: Address,
-        Approvalblago: number | bigint,
-        Profitblago: number | bigint,
+        ApprovalBlago: number | bigint,
+        ProfitBlago: number | bigint,
     ) {
         await provider.internal(via, {
             value,
@@ -338,23 +338,23 @@ export class Dao implements Contract {
                     // cell transaction_info
                     beginCell()
                         .storeAddress(Recipient)
-                        .storeUint(Approvalblago, 32)
-                        .storeUint(Profitblago, 32)
+                        .storeUint(ApprovalBlago, 32)
+                        .storeUint(ProfitBlago, 32)
                         .endCell(),
                 )
                 .endCell(),
         });
     }
 
-    async sendPutUpblagoForSale(
+    async sendPutUpBlagoForSale(
         provider: ContractProvider,
         via: Sender,
         value: bigint,
         Deadline: number | bigint,
-        blagoBuyer: Address,
+        BlagoBuyer: Address,
         Price: number | bigint,
-        ApprovalblagoForSale: number | bigint,
-        ProfitblagoForSale: number | bigint,
+        ApprovalBlagoForSale: number | bigint,
+        ProfitBlagoForSale: number | bigint,
     ) {
         await provider.internal(via, {
             value,
@@ -366,10 +366,10 @@ export class Dao implements Contract {
                 .storeRef(
                     // cell transaction_info
                     beginCell()
-                        .storeAddress(blagoBuyer)
+                        .storeAddress(BlagoBuyer)
                         .storeCoins(Price)
-                        .storeUint(ApprovalblagoForSale, 32)
-                        .storeUint(ProfitblagoForSale, 32)
+                        .storeUint(ApprovalBlagoForSale, 32)
+                        .storeUint(ProfitBlagoForSale, 32)
                         .endCell(),
                 )
                 .endCell(),
@@ -436,7 +436,7 @@ export class Dao implements Contract {
     // Get-methods
 
     async getDaoStatus(provider: ContractProvider): Promise<number> {
-        const result = await provider.get('get_dao_status', []);
+        const result = await provider.get('get_a_dao_status', []);
         return result.stack.readNumber(); // int1 active?
     }
 
@@ -494,7 +494,7 @@ export class Dao implements Contract {
     }
 
     async getDaoData(provider: ContractProvider): Promise<DaoData> {
-        const result = await provider.get('get_dao_data', []);
+        const result = await provider.get('get_a_dao_data', []);
 
         const active = result.stack.readNumber();
         const root_address = result.stack.readAddress();

@@ -59,7 +59,7 @@ export class DaoMaster implements Contract {
     }
 
     async getDaoAddressByDeployerAddress(provider: ContractProvider, deployer_address: Address): Promise<Address> {
-        const result = await provider.get('get_dao_address_by_deployer_address', [
+        const result = await provider.get('get_a_dao_address_by_deployer_address', [
             { type: 'slice', cell: beginCell().storeAddress(deployer_address).endCell() },
         ]);
         return result.stack.readAddress();

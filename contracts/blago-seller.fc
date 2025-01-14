@@ -16,11 +16,11 @@ const int op::transfer_bought_blago = 84;
 
 ;; Initial
 global int active?; ;; uint1
-global slice dao_master; ;; slice 257bits
+global slice a_dao_master; ;; slice 257bits
 global int index; ;; uint32
 
 ;; Active
-global slice dao;
+global slice a_dao;
 global slice seller_address;
 global slice buyer_address;
 global int price;
@@ -34,9 +34,9 @@ global int profit_blago_for_sale;
     set_data(
         begin_cell()
             .store_int(active?, 1)
-            .store_slice(dao_master) ;; slice 257bits
+            .store_slice(a_dao_master) ;; slice 257bits
             .store_uint(index, 32)
-            .store_slice(dao) ;; slice 257bits
+            .store_slice(a_dao) ;; slice 257bits
             .store_ref( ;; cell sale_info
             begin_cell()
                     .store_slice(seller_address)
@@ -56,13 +56,13 @@ global int profit_blago_for_sale;
     ~strdump("1");
     active? = ds~load_int(1);
     ~strdump("2");
-    dao_master = ds~load_msg_addr();
+    a_dao_master = ds~load_msg_addr();
     ~strdump("3");
     index = ds~load_uint(32);
     ~strdump("4");
     if (active?) {
         ~strdump("active? == -1");
-        dao = ds~load_msg_addr(); 
+        a_dao = ds~load_msg_addr(); 
         ~strdump("1");
         slice sale_info_cs = ds~load_ref().begin_parse();
         ~strdump("2");
@@ -78,7 +78,7 @@ global int profit_blago_for_sale;
         ~strdump("7");
     } else {
         ~strdump("active? == 0");
-        dao = begin_cell().end_cell().begin_parse();
+        a_dao = begin_cell().end_cell().begin_parse();
         seller_address = begin_cell().end_cell().begin_parse();
         buyer_address = begin_cell().end_cell().begin_parse();
         price = 0;
@@ -91,7 +91,7 @@ global int profit_blago_for_sale;
 () just_notify_master(int op) impure inline {
     cell msg = begin_cell()
         .store_uint(0x10, 6)
-        .store_slice(dao_master)
+        .store_slice(a_dao_master)
         .store_coins(0)
         .store_uint(1, 107)
         .store_ref(
@@ -123,7 +123,7 @@ global int profit_blago_for_sale;
         profit_blago_for_sale~dump();
         var msg = begin_cell()
             .store_uint(0x18, 6)
-            .store_slice(dao)
+            .store_slice(a_dao)
             .store_coins(0)
             .store_uint(1, 107)
             .store_ref(
@@ -145,8 +145,8 @@ global int profit_blago_for_sale;
     if (op == op::process_deploy_message) {
         active?~dump();
         ~strdump("Start deploy message processing");
-        throw_unless(666, equal_slices(sender_address, dao_master));
-        dao = in_msg_body~load_msg_addr();
+        throw_unless(666, equal_slices(sender_address, a_dao_master));
+        a_dao = in_msg_body~load_msg_addr();
         seller_address = in_msg_body~load_msg_addr();
         buyer_address = in_msg_body~load_msg_addr();
         price = in_msg_body~load_coins();

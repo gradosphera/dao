@@ -7,15 +7,15 @@
 
 const int op::process_deploy_message = 0;
 const int op::master_log = 1;
-const int op::activate_dao = 2;
+const int op::activate_a_dao = 2;
 const int op::propose_transaction = 3;
 const int op::approve_transaction = 4;
-const int op::accept_invitation_to_dao = 6;
+const int op::accept_invitation_to_a_dao = 6;
 const int op::buy_blago = 7;
-const int op::invite_to_dao = 8;
+const int op::invite_to_a_dao = 8;
 const int op::revoke_approval = 9;
 const int op::change_my_address = 10;
-const int op::quit_dao = 11;
+const int op::quit_a_dao = 11;
 const int op::top_up_balance = 12;
 
 ;; Internal Operations
@@ -43,7 +43,7 @@ const int tt::delete_pending_transactions = 10;
 ;; Initial
 
 global int status; ;; uint1
-global slice dao_master; ;; slice 257bits
+global slice a_dao_master; ;; slice 257bits
 global slice deployer_address; ;; slice 257bits
 global int transaction_fee; ;; uint32
 global int blago_seller_creation_fee;
@@ -95,7 +95,7 @@ global int total_profit_reserved; ;; uint32
     set_data(
         begin_cell()
             .store_int(status, 2)
-            .store_slice(dao_master)
+            .store_slice(a_dao_master)
             .store_slice(deployer_address)
             .store_coins(transaction_fee)
             .store_coins(blago_seller_creation_fee)
@@ -121,8 +121,8 @@ global int total_profit_reserved; ;; uint32
     slice ds = get_data().begin_parse();
     status = ds~load_int(2);
     status~dump();
-    dao_master = ds~load_msg_addr();
-    dao_master~dump();
+    a_dao_master = ds~load_msg_addr();
+    a_dao_master~dump();
     deployer_address = ds~load_msg_addr();
     deployer_address~dump();
     if (status == -1) { ;; inactive
@@ -213,7 +213,7 @@ global int total_profit_reserved; ;; uint32
 () just_notify_master(int op, int transaction_type) impure inline {
     cell msg = begin_cell()
         .store_uint(0x10, 6)
-        .store_slice(dao_master)
+        .store_slice(a_dao_master)
         .store_coins(transaction_fee)
         .store_uint(1, 107)
         .store_ref(
@@ -226,7 +226,7 @@ global int total_profit_reserved; ;; uint32
     send_raw_message(msg, 1);
 }
 
-() send_invites_to_dao(cell pending_invitations) impure inline {
+() send_invites_to_a_dao(cell pending_invitations) impure inline {
     ~strdump("Start sending invites to DAO");
     (int passcode, cell authorized_address_info, int success?) = pending_invitations.udict_get_min_ref?(32);
     while (success?) {
@@ -245,7 +245,7 @@ global int total_profit_reserved; ;; uint32
                 .store_uint(1, 107)
                 .store_ref(
             begin_cell()
-                        .store_uint(op::invite_to_dao, 32)
+                        .store_uint(op::invite_to_a_dao, 32)
                         .store_uint(passcode, 32)
                         .store_uint(approval_blago, 32)
                         .store_uint(profit_blago, 32)
@@ -341,7 +341,7 @@ global int total_profit_reserved; ;; uint32
                         .store_uint(1, 107)
                         .store_ref(
                     begin_cell()
-                                .store_uint(op::invite_to_dao, 32)
+                                .store_uint(op::invite_to_a_dao, 32)
                                 .store_uint(passcode, 32)
                                 .store_uint(approval_blago, 32)
                                 .store_uint(profit_blago, 32)
@@ -459,7 +459,7 @@ global int total_profit_reserved; ;; uint32
                 return();
             }
             if (transaction_type == tt::transfer_blago) {
-                ~strdump("Start Transaction Approval: Transfer blago");
+                ~strdump("Start Transaction Approval: Transfer Blago");
                 ~strdump("Get transaction_info_cs");
                 slice blago_sender = transaction_info_cs~load_msg_addr();
                 blago_sender~dump();
@@ -614,7 +614,7 @@ global int total_profit_reserved; ;; uint32
                 return ();
             }
             if (transaction_type == tt::put_up_blago_for_sale) {
-                ~strdump("Start Transaction Approval: Put Up blago For Sale");
+                ~strdump("Start Transaction Approval: Put Up Blago For Sale");
                 slice seller_address = transaction_info_cs~load_msg_addr();
                 seller_address~dump();
                 slice buyer_address = transaction_info_cs~load_msg_addr();
@@ -629,7 +629,7 @@ global int total_profit_reserved; ;; uint32
                 var msg = 
                     begin_cell()
                         .store_uint(0x18, 6)
-                        .store_slice(dao_master)
+                        .store_slice(a_dao_master)
                         .store_coins(blago_seller_creation_fee)
                         .store_uint(1, 107)
                         .store_ref(
@@ -846,7 +846,7 @@ global int total_profit_reserved; ;; uint32
             return();
         }
         if (transaction_type == tt::transfer_blago) {
-            ~strdump("Start Transaction Proposal: Transfer blago");
+            ~strdump("Start Transaction Proposal: Transfer Blago");
             slice recipient = transaction_info_cs~load_msg_addr();
             int approval_blago_in_transfer = transaction_info_cs~load_uint(32);
             int profit_blago_in_transfer = transaction_info_cs~load_uint(32);
@@ -880,7 +880,7 @@ global int total_profit_reserved; ;; uint32
             return();
         }
         if (transaction_type == tt::put_up_blago_for_sale) {
-            ~strdump("Start Transaction Proposal: Put Up blago For Sale");
+            ~strdump("Start Transaction Proposal: Put Up Blago For Sale");
             slice blago_buyer = transaction_info_cs~load_msg_addr();
             int price = transaction_info_cs~load_coins();
             int approval_blago_for_sale = transaction_info_cs~load_uint(32);
@@ -1021,7 +1021,7 @@ global int total_profit_reserved; ;; uint32
         just_notify_master(op, tt::transaction_without_type);
         return();
     }
-    if (op == op::quit_dao) {
+    if (op == op::quit_a_dao) {
         ~strdump("Start quiting DAO");
         int sender_address_sha256 = slice_hash(sender_address);
         (slice authorized_address_info_cs, int success?) = authorized_addresses.udict_get?(256, sender_address_sha256);
@@ -1043,7 +1043,7 @@ global int total_profit_reserved; ;; uint32
         just_notify_master(op, tt::transaction_without_type);
         return();
     }
-    if (op == op::accept_invitation_to_dao) {
+    if (op == op::accept_invitation_to_a_dao) {
         ~strdump("Start accepting invitation to DAO");
         int passcode = in_msg_body~load_uint(32);
         (cell pending_invitation_info, int success?) = pending_invitations.udict_get_ref?(32, passcode);
@@ -1074,7 +1074,7 @@ global int total_profit_reserved; ;; uint32
         return();
     }
     if (op == op::transfer_bought_blago) {
-        ~strdump("Start the Transfer Of Bought blago");
+        ~strdump("Start the Transfer Of Bought Blago");
         ~strdump("Parse transaction info");
         slice blago_sender = in_msg_body~load_msg_addr();
         blago_sender~dump();
@@ -1228,7 +1228,7 @@ global int total_profit_reserved; ;; uint32
         just_notify_master(op, tt::transaction_without_type);
         return ();
     }
-    if (op == op::activate_dao) {
+    if (op == op::activate_a_dao) {
         ~strdump("Start DAO Activation");
         throw_unless(error::sender_not_deployer, equal_slices(sender_address, deployer_address));
         throw_unless(error::status_not_initiated, status == 0);
@@ -1238,7 +1238,7 @@ global int total_profit_reserved; ;; uint32
         profit_reserve_percent_denominator = in_msg_body~load_uint(32);
         profitable_addresses = in_msg_body~load_dict();
         pending_invitations = in_msg_body~load_dict();
-        send_invites_to_dao(pending_invitations);
+        send_invites_to_a_dao(pending_invitations);
         status = 1;
         save_data();
         just_notify_master(op, tt::transaction_without_type);
@@ -1246,7 +1246,7 @@ global int total_profit_reserved; ;; uint32
     }
     if (op == op::process_deploy_message) {
         ~strdump("Start deploy message processing");
-        throw_unless(error::sender_not_dao_master, equal_slices(sender_address, dao_master));
+        throw_unless(error::sender_not_a_dao_master, equal_slices(sender_address, a_dao_master));
         transaction_fee = in_msg_body~load_coins();
         blago_seller_creation_fee~dump();
         blago_seller_creation_fee = in_msg_body~load_coins();
@@ -1257,7 +1257,7 @@ global int total_profit_reserved; ;; uint32
             agreement_percent_numerator = in_msg_body~load_uint(32);
             agreement_percent_denominator = in_msg_body~load_uint(32);
             pending_invitations = in_msg_body~load_dict();
-            send_invites_to_dao(pending_invitations);
+            send_invites_to_a_dao(pending_invitations);
         }
         pending_transactions = new_dict();
         authorized_addresses = new_dict();
@@ -1273,11 +1273,11 @@ global int total_profit_reserved; ;; uint32
 
 ;; Custom get-methods
 
-(int, slice, slice, int, int, int, int, int, cell, cell, cell, cell, int, int, int) get_dao_data() method_id {
+(int, slice, slice, int, int, int, int, int, cell, cell, cell, cell, int, int, int) get_a_dao_data() method_id {
     load_data();
     return (
         status, ;; int1
-        dao_master, ;; slice
+        a_dao_master, ;; slice
         deployer_address, ;; slice
         transaction_fee, ;; uint32
         agreement_percent_numerator, ;; uint32

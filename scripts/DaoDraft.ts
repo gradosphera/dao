@@ -48,7 +48,7 @@ async function buildProfitableAddressesContent(provider: NetworkProvider) {
 async function buildPendingInvitationsContent(provider: NetworkProvider) {
     const ui = provider.ui();
 
-    const addresses_number = await ui.input('Enter the number of addresses you want to invite to dao');
+    const addresses_number = await ui.input('Enter the number of addresses you want to invite to a dao');
 
     const PendingInvitationsDict = Dictionary.empty<bigint, Cell>();
 

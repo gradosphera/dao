@@ -1,0 +1,567 @@
+{
+  "Dao": {
+    "defaultAddress": "",
+    "tabName": "",
+    "sendFunctions": {
+      "sendActivateDao": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "AgreementPercentNumerator": {
+            "fieldTitle": ""
+          },
+          "AgreementPercentDenominator": {
+            "fieldTitle": ""
+          },
+          "ProfitReservePercentNumerator": {
+            "fieldTitle": ""
+          },
+          "ProfitReservePercentDenominator": {
+            "fieldTitle": ""
+          },
+          "ProfitableAddresses": {
+            "fieldTitle": ""
+          },
+          "PendingInvitations": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendTopUpBalance": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendAcceptInvitationToDao": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Passcode": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendQuitDao": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendChangeMyAddress": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "NewAddress": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeInviteAddress": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "AddressToInvite": {
+            "fieldTitle": ""
+          },
+          "ApprovalBlago": {
+            "fieldTitle": ""
+          },
+          "ProfitBlago": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeDeleteAddress": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "AddressToDelete": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeWithdrawProfit": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "ProfitableAddressPasscode": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeDistributeTon": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "DistributionAmount": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeArbitraryTransaction": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "Destination": {
+            "fieldTitle": ""
+          },
+          "Amount": {
+            "fieldTitle": ""
+          },
+          "MsgBody": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeUpdateAgreementPercent": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "AgreementPercentNumerator": {
+            "fieldTitle": ""
+          },
+          "AgreementPercentDenumerator": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeTransferBlago": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "Recipient": {
+            "fieldTitle": ""
+          },
+          "ApprovalBlago": {
+            "fieldTitle": ""
+          },
+          "ProfitBlago": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendApprove": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "TransactionIndex": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeDeletePendingInvitations": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "PendingInvitationsForRemoval": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeDeleteTransactionsInvitations": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "PendingTransactionsForRemoval": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProfit": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendFundsToCollect": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeSendCollectFunds": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "ProfitableAddressPasscode": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendPutUpBlagoForSale": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "BlagoBuyer": {
+            "fieldTitle": ""
+          },
+          "ApprovalBlagoForSale": {
+            "fieldTitle": ""
+          },
+          "ProfitBlagoForSale": {
+            "fieldTitle": ""
+          },
+          "Price": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendProposeDeletePendingTransactions": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          },
+          "Deadline": {
+            "fieldTitle": ""
+          },
+          "PendingTransactionsForRemoval": {
+            "fieldTitle": ""
+          }
+        }
+      }
+    },
+    "getFunctions": {
+      "getDaoStatus": {
+        "tabName": "",
+        "params": {},
+        "outNames": {}
+      },
+      "getDaoData": {
+        "tabName": "",
+        "params": {},
+        "outNames": {}
+      },
+      "getPendingInvitationData": {
+        "tabName": "",
+        "params": {
+          "passcode": {
+            "fieldTitle": ""
+          }
+        },
+        "outNames": {}
+      },
+      "getPendingTransactionsData": {
+        "tabName": "",
+        "params": {
+          "key": {
+            "fieldTitle": ""
+          }
+        },
+        "outNames": {}
+      },
+      "getAuthorizedAddressData": {
+        "tabName": "",
+        "params": {
+          "authorized_address_cell": {
+            "fieldTitle": ""
+          }
+        },
+        "outNames": {}
+      }
+    },
+    "definedTypes": {
+      "DaoConfig": {
+        "shownName": "",
+        "properties": {
+          "Active": {
+            "fieldTitle": ""
+          },
+          "RootAddress": {
+            "fieldTitle": ""
+          },
+          "DeployerAddressSHA256": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "ProfitableAddressValue": {
+        "shownName": "",
+        "properties": {
+          "address": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "PendingInvitationsValue": {
+        "shownName": "",
+        "properties": {
+          "address": {
+            "fieldTitle": ""
+          },
+          "approval_blago": {
+            "fieldTitle": ""
+          },
+          "profit_blago": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "DaoData": {
+        "shownName": "",
+        "properties": {
+          "active": {
+            "fieldTitle": ""
+          },
+          "root_address": {
+            "fieldTitle": ""
+          },
+          "deployer_address": {
+            "fieldTitle": ""
+          },
+          "transaction_fee": {
+            "fieldTitle": ""
+          },
+          "agreement_percent_numerator": {
+            "fieldTitle": ""
+          },
+          "agreement_percent_denominator": {
+            "fieldTitle": ""
+          },
+          "profit_reserve_percent_numerator": {
+            "fieldTitle": ""
+          },
+          "profit_reserve_percent_denominator": {
+            "fieldTitle": ""
+          },
+          "profitable_addresses": {
+            "fieldTitle": ""
+          },
+          "pending_invitations": {
+            "fieldTitle": ""
+          },
+          "pending_transactions": {
+            "fieldTitle": ""
+          },
+          "authorized_addresses": {
+            "fieldTitle": ""
+          },
+          "total_approval_blago": {
+            "fieldTitle": ""
+          },
+          "total_profit_blago": {
+            "fieldTitle": ""
+          },
+          "total_profit_reserved": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "PendingInvitationsData": {
+        "shownName": "",
+        "properties": {
+          "authorized_address": {
+            "fieldTitle": ""
+          },
+          "approval_blago": {
+            "fieldTitle": ""
+          },
+          "profit_blago": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "PendingTransactionsData": {
+        "shownName": "",
+        "properties": {
+          "transaction_type": {
+            "fieldTitle": ""
+          },
+          "deadline": {
+            "fieldTitle": ""
+          },
+          "transaction_info": {
+            "fieldTitle": ""
+          },
+          "approvals": {
+            "fieldTitle": ""
+          },
+          "approval_blago_recieved": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "AuthorizedAddressData": {
+        "shownName": "",
+        "properties": {
+          "authorized_address": {
+            "fieldTitle": ""
+          },
+          "approval_blago": {
+            "fieldTitle": ""
+          },
+          "profit_blago": {
+            "fieldTitle": ""
+          },
+          "approved_transactions": {
+            "fieldTitle": ""
+          }
+        }
+      }
+    }
+  },
+  "DaoMaster": {
+    "defaultAddress": "",
+    "tabName": "",
+    "sendFunctions": {
+      "sendDeploy": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      },
+      "sendDeployDao": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      }
+    },
+    "getFunctions": {
+      "getDaoAddressByDeployerAddress": {
+        "tabName": "",
+        "params": {
+          "deployer_address": {
+            "fieldTitle": ""
+          }
+        },
+        "outNames": {}
+      },
+      "getBlagoSellerAddressByIndex": {
+        "tabName": "",
+        "params": {
+          "index": {
+            "fieldTitle": ""
+          }
+        },
+        "outNames": {}
+      }
+    },
+    "definedTypes": {
+      "DaoMasterConfig": {
+        "shownName": "",
+        "properties": {
+          "OwnerAddress": {
+            "fieldTitle": ""
+          },
+          "DaoCode": {
+            "fieldTitle": ""
+          },
+          "NextDaoCreationFee": {
+            "fieldTitle": ""
+          },
+          "NextDaoTransactionFee": {
+            "fieldTitle": ""
+          },
+          "NextDaoCreationFeeDiscount": {
+            "fieldTitle": ""
+          },
+          "NextDaoTransactionFeeIncrease": {
+            "fieldTitle": ""
+          },
+          "MaxDaoTransactionFee": {
+            "fieldTitle": ""
+          },
+          "BlagoSeller": {
+            "fieldTitle": ""
+          },
+          "BlagoSellerCreationFee": {
+            "fieldTitle": ""
+          }
+        }
+      }
+    }
+  },
+  "BlagoSeller": {
+    "defaultAddress": "",
+    "tabName": "",
+    "sendFunctions": {
+      "sendBuy": {
+        "tabName": "",
+        "params": {
+          "value": {
+            "fieldTitle": ""
+          }
+        }
+      }
+    },
+    "getFunctions": {},
+    "definedTypes": {}
+  }
+}
