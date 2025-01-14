@@ -1,0 +1,223 @@
+#include "stdlib.fc";
+
+;; Operation Codes
+
+const int op::deploy_dao = 0;
+const int op::withdraw_funds = 1;
+const int op::change_dao_master_owner = 2;
+
+;; Internal operations
+
+const int op::start_points_sale = 82;
+
+;; Global variables
+
+global slice owner_address; ;; addr 257bits
+global cell dao_code; ;; ref 1
+global int next_dao_creation_fee; ;; uint32
+global int next_dao_transaction_fee; ;; uint32
+global int next_dao_creation_fee_discount;
+global int next_dao_transaction_fee_increase;
+global int max_dao_transaction_fee;
+global cell points_seller_code; ;; ref 2
+global int points_seller_next_index; ;; uint32
+global int points_seller_creation_fee; ;; uint32
+
+;; Storage functions
+
+() load_data() impure inline {
+    ~strdump("Start load_data()");
+    slice ds = get_data().begin_parse();
+    owner_address = ds~load_msg_addr();
+    owner_address~dump();
+    dao_code = ds~load_ref();
+    dao_code~dump();
+    next_dao_creation_fee = ds~load_coins();
+    next_dao_creation_fee~dump();
+    next_dao_transaction_fee = ds~load_coins();
+    next_dao_transaction_fee~dump();
+    next_dao_creation_fee_discount = ds~load_coins();
+    next_dao_creation_fee_discount~dump();
+    next_dao_transaction_fee_increase = ds~load_coins();
+    next_dao_transaction_fee_increase~dump();
+    max_dao_transaction_fee = ds~load_coins();
+    max_dao_transaction_fee~dump();
+    points_seller_code = ds~load_ref();
+    points_seller_code~dump();
+    points_seller_next_index = ds~load_uint(32);
+    points_seller_next_index~dump();
+    points_seller_creation_fee = ds~load_coins();
+    points_seller_creation_fee~dump();
+    ds.end_parse();
+    ~strdump("End load_data()");
+}
+
+() save_data() impure inline {
+    ~strdump("Start save_data()");
+    set_data(
+        begin_cell()
+            .store_slice(owner_address)
+            .store_ref(dao_code)
+            .store_coins(next_dao_creation_fee)
+            .store_coins(next_dao_transaction_fee)
+            .store_coins(next_dao_creation_fee_discount)
+            .store_coins(next_dao_transaction_fee_increase)
+            .store_coins(max_dao_transaction_fee)
+            .store_ref(points_seller_code)
+            .store_uint(points_seller_next_index, 32)
+            .store_coins(points_seller_creation_fee)
+        .end_cell()
+    );
+    ~strdump("End save_data()");
+}
+
+;; A DAO Deploy Functions
+
+cell calculate_dao_initial_state(
+    slice deployer_address,
+    cell dao_code
+) {
+    cell dao_data = 
+    begin_cell()
+        .store_int(-1, 2) ;; int1 active?
+        .store_slice(my_address()) ;; slice dao_master
+        .store_slice(deployer_address)
+    .end_cell();
+    return (
+        begin_cell()
+        .store_uint(0, 2)
+        .store_dict(dao_code)
+        .store_dict(dao_data)
+        .store_uint(0, 1)
+    .end_cell()
+    );
+}
+
+slice calculate_dao_address(cell dao_initial_state) {
+    return 
+    begin_cell()
+        .store_uint(4, 3)
+        .store_int(0, 8)
+        .store_uint(cell_hash(dao_initial_state), 256)
+    .end_cell()
+    .begin_parse();
+}
+
+;; Points Seller Deploy Functions
+
+cell calculate_points_seller_initial_state(
+    int points_seller_next_index,
+    cell points_seller_code
+) {
+    cell points_seller_data = 
+    begin_cell()
+        .store_int(0, 1) ;; int1 active?
+        .store_slice(my_address()) ;; slice dao_master
+        .store_uint(points_seller_next_index, 32)
+    .end_cell();
+    return (
+        begin_cell()
+        .store_uint(0, 2)
+        .store_dict(points_seller_code)
+        .store_dict(points_seller_data)
+        .store_uint(0, 1)
+    .end_cell()
+    );
+}
+
+slice calculate_points_seller_address(cell points_seller_initial_state) {
+    return 
+    begin_cell()
+        .store_uint(4, 3)
+        .store_int(0, 8)
+        .store_uint(cell_hash(points_seller_initial_state), 256)
+    .end_cell()
+    .begin_parse();
+}
+
+() main(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure inline {
+    slice cs = in_msg_full.begin_parse();
+    int flags = cs~load_uint(4);
+    slice sender_address = cs~load_msg_addr();
+    load_data();
+    if (in_msg_body.slice_empty?()) {
+        ~strdump("Start a dao creation");
+        throw_unless(666, msg_value > next_dao_creation_fee);
+        ~strdump("Create deploy message");
+        cell dao_initial_state = calculate_dao_initial_state(sender_address, dao_code);
+        slice dao_address = calculate_dao_address(dao_initial_state);
+        cell message = begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(dao_address)
+            .store_coins(1000000000)
+            .store_uint(7, 108)
+            .store_ref(dao_initial_state)
+            .store_ref(
+            begin_cell()
+                    .store_uint(op::deploy_dao, 32)
+                    .store_coins(next_dao_transaction_fee)
+                    .store_coins(points_seller_creation_fee)
+                .end_cell()
+        )
+        .end_cell();
+        ~strdump("Send deploy message");
+        send_raw_message(message, 0);
+        return ();
+    }
+    int op = in_msg_body~load_uint(32);
+    if (op == op::start_points_sale) {
+        ~strdump("Start initiating points sale");
+        slice dao = in_msg_body~load_msg_addr();
+        slice seller_address = in_msg_body~load_msg_addr();
+        slice buyer_address = in_msg_body~load_msg_addr();
+        int price = in_msg_body~load_coins();
+        int approval_points_for_sale = in_msg_body~load_uint(32);
+        int profit_points_for_sale = in_msg_body~load_uint(32);
+        ~strdump("Create deploy message");
+        cell points_seller_initial_state = calculate_points_seller_initial_state(points_seller_next_index, points_seller_code);
+        slice points_seller_address = calculate_points_seller_address(points_seller_initial_state);
+        cell message = begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(points_seller_address)
+            .store_coins(100000000)
+            .store_uint(7, 108)
+            .store_ref(points_seller_initial_state)
+            .store_ref(
+            begin_cell()
+                    .store_uint(op::start_points_sale, 32)
+                    .store_slice(dao)
+                    .store_slice(seller_address)
+                    .store_slice(buyer_address)
+                    .store_coins(price)
+                    .store_uint(approval_points_for_sale, 32)
+                    .store_uint(profit_points_for_sale, 32)
+                .end_cell()
+        )
+        .end_cell();
+        ~strdump("Send deploy message");
+        send_raw_message(message, 0);
+        ~strdump("Update points_seller_next_index");
+        points_seller_next_index = points_seller_next_index + 1;
+        save_data();
+        return ();
+    }
+    if (op == op::withdraw_funds) {
+
+    }
+}
+
+;; Custom get-methods
+
+(slice) get_dao_address_by_deployer_address(slice deployer_address) method_id {
+    load_data();
+    return calculate_dao_address(calculate_dao_initial_state(deployer_address, dao_code));
+}
+
+(slice) get_points_seller_address_by_index(int index) method_id {
+    load_data();
+    return calculate_points_seller_address(calculate_points_seller_initial_state(index, points_seller_code));
+}
+
+(int) get_next_dao_creation_fee() method_id {
+    return next_dao_creation_fee;
+}
